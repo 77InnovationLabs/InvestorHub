@@ -10,6 +10,11 @@ import { PoolDayDataRepository } from './repositories/pool-day-data.repository';
 import { UniswapPoolResponseDto, UniswapPoolsResponseDto } from '../shared/dtos/list-pools-response.dto';
 import { Pool } from '../../database/schemas/pool.schemas';
 import { PoolDayData } from '../../database/schemas/pool-day-data.schema';
+import { Token } from '../../database/schemas/token.schema';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+
+type TokenDocument = Token & { _id: Types.ObjectId };
 
 @Injectable()
 export class PoolService {
@@ -18,19 +23,20 @@ export class PoolService {
   constructor(
     private readonly poolRepository: PoolRepository,
     private readonly poolDayDataRepository: PoolDayDataRepository,
-  ) {}
+    @InjectModel(Token.name) private readonly tokenModel: Model<TokenDocument>,
+  ) { }
 
   private calculatePoolMetrics(pool: Pool, poolDayData: PoolDayData[]): UniswapPoolResponseDto {
     // Calculate APR24h for each day's data
     const poolDayDataWithApr = poolDayData.map(dayData => {
       const dayFees = parseFloat(dayData.feesUSD) || 0;
       const dayTVL = parseFloat(dayData.tvlUSD) || 0;
-      
+
       let apr24h = 0;
       if (dayTVL > 0) {
         apr24h = (dayFees / dayTVL) * 365 * 100;
       }
-      
+
       return {
         date: dayData.date,
         feesUSD: dayData.feesUSD,
@@ -82,21 +88,20 @@ export class PoolService {
     };
   }
 
-  async fetchPoolsForTokenPair(token0: string, token1: string): Promise<UniswapPoolsResponseDto> {
-    
+  async fetchPoolsForTokenPair(token0Address: string, token1Address: string): Promise<UniswapPoolsResponseDto> {
     try {
       // Find pools for this token pair
-      const pools = await this.poolRepository.findByTokenAddresses(token0, token1);
+      const pools = await this.poolRepository.findByTokenAddresses(token0Address, token1Address);
       
       if (!pools || pools.length === 0) {
-        throw new NotFoundException(`No pools found for token pair: ${token0}, ${token1}`);
+        throw new NotFoundException(`No pools found for token pair: ${token0Address}, ${token1Address}`);
       }
       
       const poolIds = pools.map(pool => pool._id.toString());
       
       // Get pool day data for all pools
       const allPoolDayData = await this.poolDayDataRepository.findByPoolIds(poolIds);
-      
+
       // Group pool day data by pool ID
       const poolDayDataByPoolId = allPoolDayData.reduce((acc, data) => {
         const poolId = data.id_pool.toString();
@@ -106,27 +111,27 @@ export class PoolService {
         acc[poolId].push(data);
         return acc;
       }, {});
-      
+
       // Transform pools with day data
       const transformedPools = pools.map(pool => {
         const poolId = pool._id.toString();
         const dayData = poolDayDataByPoolId[poolId] || [];
         return this.calculatePoolMetrics(pool, dayData);
       });
-      
-      const responseDto: UniswapPoolsResponseDto = { 
+
+      const responseDto: UniswapPoolsResponseDto = {
         pools: transformedPools,
         blockNumber: '0', // MongoDB doesn't have block numbers, so we set to 0
       };
-      
+
       return responseDto;
     } catch (error) {
-      this.logger.error(`Error fetching pools for token pair ${token0}, ${token1}:`, error);
-      
+      this.logger.error(`Error fetching pools for token pair ${token0Address}, ${token1Address}:`, error);
+
       if (error instanceof NotFoundException) {
         throw error;
       }
-      
+
       throw new ServiceUnavailableException('Service temporarily unavailable');
     }
   }
