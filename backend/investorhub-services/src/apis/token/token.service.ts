@@ -1,9 +1,9 @@
 import { Injectable, Logger, NotFoundException, ConflictException } from '@nestjs/common';
 import { Token } from '../../database/schemas/token.schema';
 import { CreateTokenDto, UpdateTokenDto, TokenResponseDto } from './dto/token-response.dto';
-import { TokenRepository } from './token.repository';
+import { TokenRepository } from './repository/token.repository';
 import { NetworkConfig } from '../../database/schemas/network-config.schema';
-import { NetworkConfigRepository } from '../network-config/network-config.repository';
+import { NetworkConfigRepository } from '../network-config/repository/network-config.repository';
 
 @Injectable()
 export class TokenService {

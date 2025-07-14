@@ -8,7 +8,7 @@ import { ERC20_ABI } from '../shared/ABIS/ERC20';
 import { POSITION_MANAGER_ABI } from '../shared/ABIS/POSITION_MANAGER';
 import { POOL_ABI } from '../shared/ABIS/POOL';
 import { FACTORY_ABI } from '../shared/ABIS/FACTORY';
-import { NetworkConfigRepository } from '../network-config/network-config.repository';
+import { NetworkConfigRepository } from '../network-config/repository/network-config.repository';
 import { NetworkConfig } from 'src/database/schemas/network-config.schema';
 
 @Injectable()

@@ -25,18 +25,17 @@ contract StartFullSwapInteraction is Script {
     // General Transaction Info
     address constant USER = 0x5FA769922a6428758fb44453815e2c436c57C3c7;
     uint24 constant LINK_WETH_POOL_FEE = 10000; //1%
-    // uint24 constant WETH_USDC_POOL_FEE = 500; //0.05%
-    uint24 constant WETH_USDT_POOL_FEE = 1000; //1% //USDT/ETH: https://www.geckoterminal.com/sepolia-testnet/pools/0x58d850667c47981a1b6e7ca0b8dc2eb937cd4119
-    uint24 constant USDC_USDT_POOL_FEE = 100; //0.01% //USDC/USDT: https://www.geckoterminal.com/sepolia-testnet/pools/0xd9b666fb0a01616c5bd3d7791cc98bc42d30eb07
-    uint24 constant USDC_WETH_POOL_FEE = 1000; //1% //USDC/WETH: https://www.geckoterminal.com/sepolia-testnet/pools/0xcdf1597a0c2dda04e80e135351831b7a6af1f86d
+    uint24 constant WETH_USDT_POOL_FEE = 10000; //1% //USDT/ETH
+    uint24 constant USDC_USDT_POOL_FEE = 500; //0.05% //USDC/USDT
+    uint24 constant USDC_WETH_POOL_FEE = 500; //0.05% //USDC/WETH
     address constant INPUT_TOKEN_WETH = 0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14;
     address constant LINK_SEPOLIA = 0x779877A7B0D9E8603169DdbD7836e478b4624789;
-    address constant USDC_SEPOLIA = 0x94a9D9AC8a22534E3FaCa9F4e7F2E2cf85d5E4C8;
+    address constant USDC_SEPOLIA = 0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238;
     address constant USDT_SEPOLIA = 0xaA8E23Fb1079EA71e0a56F48a2aA51851D8433D0;
-    uint256 constant TOTAL_AMOUNT_IN = 0.0002 ether;
-    uint256 constant AMOUNT_IN_SWAP = 0.0001 ether;
-    uint256 constant AMOUNT_DESIRED_USDT = 3_096_889_900; // Initial Value 3_192_670_000
-    uint256 constant AMOUNT_DESIRED_USDC = 4_094_127_500; // Initial Value 4_220_750_000
+    uint256 constant TOTAL_AMOUNT_IN = 0.002 ether;
+    uint256 constant AMOUNT_IN_SWAP = 0.001 ether;
+    uint256 constant AMOUNT_DESIRED_USDT = 5_599_970_000;
+    uint256 constant AMOUNT_DESIRED_USDC = 54_552_400;
     uint256 constant DEADLINE = 60;
     
     // Pool Info
@@ -153,10 +152,10 @@ contract StartFullSwapInteraction is Script {
             tickUpper: maxTick,
             amount0Desired: AMOUNT_DESIRED_USDT,
             amount1Desired: AMOUNT_DESIRED_USDC,
-            amount0Min: 0,
-            amount1Min: 0,
+            amount0Min: (AMOUNT_DESIRED_USDT * 95) / 100,
+            amount1Min: (AMOUNT_DESIRED_USDC * 95) / 100,
             recipient: USER, //Tx Executioner
-            deadline: block.timestamp + DEADLINE
+            deadline: block.timestamp
         });
         
         console.log("InvestPayload's fee is: ", USDC_USDT_POOL_FEE);
@@ -203,3 +202,20 @@ contract StartFullSwapInteraction is Script {
         }
     }
 }
+
+// MintParams({ 
+//     token0: 0xaA8E23Fb1079EA71e0a56F48a2aA51851D8433D0, 
+//     token1: 0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238, 
+//     fee: 500, 
+//     tickLower: -887270 [-8.872e5], 
+//     tickUpper: 887270 [8.872e5], 
+//     amount0Desired: 9_245_102_690 [9.245e9], 
+//     amount1Desired: 75_451_039 [7.545e7], 
+//     amount0Min: 5_319_971_500 [5.319e9], 
+//     amount1Min: 51_824_780 [5.182e7], 
+//     recipient: 0x5FA769922a6428758fb44453815e2c436c57C3c7,
+//     deadline: 1752284964 [1.752e9]
+// })
+
+// -9433778255 [-9.433e9], amount1: 1000000000000000
+// -76990856 [-7.699e7], amount1: 1000000000000000

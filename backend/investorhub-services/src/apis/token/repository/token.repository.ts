@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { Token } from '../../database/schemas/token.schema';
-import { BaseRepository } from '../../database/repositories/base.repository';
+import { Token } from '../../../database/schemas/token.schema';
+import { BaseRepository } from '../../../database/repositories/base.repository';
 
 @Injectable()
 export class TokenRepository extends BaseRepository<Token> {

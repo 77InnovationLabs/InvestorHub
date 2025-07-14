@@ -4,17 +4,11 @@ import {
   NotFoundException,
   ServiceUnavailableException,
 } from '@nestjs/common';
-import { Types } from 'mongoose';
 import { PoolRepository } from './repositories/pool.repository';
 import { PoolDayDataRepository } from './repositories/pool-day-data.repository';
 import { UniswapPoolResponseDto, UniswapPoolsResponseDto } from '../shared/dtos/list-pools-response.dto';
 import { Pool } from '../../database/schemas/pool.schemas';
 import { PoolDayData } from '../../database/schemas/pool-day-data.schema';
-import { Token } from '../../database/schemas/token.schema';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-
-type TokenDocument = Token & { _id: Types.ObjectId };
 
 @Injectable()
 export class PoolService {
@@ -23,7 +17,6 @@ export class PoolService {
   constructor(
     private readonly poolRepository: PoolRepository,
     private readonly poolDayDataRepository: PoolDayDataRepository,
-    @InjectModel(Token.name) private readonly tokenModel: Model<TokenDocument>,
   ) { }
 
   private calculatePoolMetrics(pool: Pool, poolDayData: PoolDayData[]): UniswapPoolResponseDto {

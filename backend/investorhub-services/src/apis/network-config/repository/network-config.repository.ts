@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { NetworkConfig } from '../../database/schemas/network-config.schema';
-import { BaseRepository } from '../../database/repositories/base.repository';
+import { NetworkConfig } from '../../../database/schemas/network-config.schema';
+import { BaseRepository } from '../../../database/repositories/base.repository';
 
 @Injectable()
 export class NetworkConfigRepository extends BaseRepository<NetworkConfig> {

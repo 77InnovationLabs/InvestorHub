@@ -5,19 +5,19 @@ import { TokenService } from './token.service';
 import { Token, TokenSchema } from '../../database/schemas/token.schema';
 import { NetworkConfig, NetworkConfigSchema } from '../../database/schemas/network-config.schema';
 import { DatabaseModule } from '../../database/database.module';
-import { TokenRepository } from './token.repository';
-import { NetworkConfigRepository } from '../network-config/network-config.repository';
+import { TokenRepository } from './repository/token.repository';
+import { NetworkConfigModule } from '../network-config/network-config.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Token.name, schema: TokenSchema },
-      { name: NetworkConfig.name, schema: NetworkConfigSchema },
     ]),
     DatabaseModule,
+    NetworkConfigModule,
   ],
   controllers: [TokenController],
-  providers: [TokenService, TokenRepository, NetworkConfigRepository],
+  providers: [TokenService, TokenRepository], 
   exports: [TokenService, TokenRepository],
 })
 export class TokenModule {}

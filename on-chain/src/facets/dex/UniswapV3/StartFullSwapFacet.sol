@@ -150,7 +150,8 @@ contract StartFullSwapFacet {
         }
 
         // Delegatecall to an internal facet to process the stake
-        (bool success, bytes memory data) = i_diamond.delegatecall(
+        LibTransfers._handleDelegateCalls(
+            i_diamond,
             abi.encodeWithSelector(
                 IStartPositionFacet.startPositionUniswapV3.selector,
                 _stakePayload,
@@ -158,7 +159,6 @@ contract StartFullSwapFacet {
                 false
             )
         );
-        if(!success) revert StartFullSwapFacet_UnableToDelegatecall(data);
     }
 
 }
