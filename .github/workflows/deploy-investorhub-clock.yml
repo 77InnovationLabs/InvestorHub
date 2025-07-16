@@ -19,15 +19,26 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      
+      - name: Install Heroku CLI
+        run: |
+          curl https://cli-assets.heroku.com/install.sh | sh
+
       - name: Login to Heroku Container Registry
         run: | 
+          heroku login
           echo "$HEROKU_API_KEY" | docker login --username=_ --password-stdin registry.heroku.com
+          heroku container:login
+          heroku stack:set container --app=investorhub-clock
+      
       - name: Build Docker images worker
         run: |
           docker build -f backend/investorhub-clock/Dockerfile.worker -t registry.heroku.com/investorhub-clock/worker ./backend/investorhub-clock
+      
       - name: Push Docker images to Heroku
         run: |
           docker push registry.heroku.com/investorhub-clock/worker
+      
       - name: Release worker profile
         run: |
           heroku container:release worker --app=investorhub-clock
