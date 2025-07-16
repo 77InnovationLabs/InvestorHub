@@ -22,8 +22,6 @@ jobs:
       - name: Login to Heroku Container Registry
         run: | 
             echo "$HEROKU_API_KEY" | docker login --username=_ --password-stdin registry.heroku.com
-            heroku container:login
-            heroku stack:set container --app=investorhub-services
       - name: Build Docker images (web profile)
         run: |
           docker build -f backend/investorhub-services/Dockerfile.web -t registry.heroku.com/investorhub-services/web ./backend/investorhub-services
