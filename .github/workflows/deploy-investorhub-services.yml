@@ -26,7 +26,6 @@ jobs:
 
       - name: Login to Heroku Container Registry
         run: | 
-          heroku login
           echo "$HEROKU_API_KEY" | docker login --username=_ --password-stdin registry.heroku.com
           heroku container:login
           heroku stack:set container --app=investorhub-services
