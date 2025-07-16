@@ -1,0 +1,37 @@
+# https://github.com/marketplace/actions/build-push-and-release-a-docker-container-to-heroku
+name: Deploy investorhub-services to Heroku
+
+on:
+  push:
+    branches: [main, v1/Reset]
+    paths:
+      - 'backend/investorhub-services/**'
+  pull_request:
+    branches: [main, v1/Reset]
+    paths:
+      - 'backend/investorhub-services/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Login to Heroku Container Registry
+        run: | 
+            echo "$HEROKU_API_KEY" | docker login --username=_ --password-stdin registry.heroku.com
+            heroku container:login
+            heroku stack:set container --app=investorhub-services
+      - name: Build Docker images (web profile)
+        run: |
+          docker build -f backend/investorhub-services/Dockerfile.web -t registry.heroku.com/investorhub-services/web ./backend/investorhub-services
+      - name: Push Docker images to Heroku
+        run: |
+          docker push registry.heroku.com/investorhub-services/web
+      - name: Release web profile
+        run: |
+          heroku container:release web --app=investorhub-services
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }} 
