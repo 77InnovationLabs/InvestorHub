@@ -9,17 +9,39 @@ import { HelperConfig } from "script/helpers/HelperConfig.sol";
 import { DeployInit } from "script/DeployInit.s.sol";
 
 contract BaseTests is Test {
-    ///Instantiate Environment Storage
+    
+    /*/////////////////////////////////////////////////
+                    ENVIRONMENT VARIABLES
+    /////////////////////////////////////////////////*/
     HelperConfig helperConfig;
     HelperConfig.NetworkConfig c;
 
-    ///Global Diamond address;
-    address public d;
+    /*/////////////////////////////////////////////////
+                    TOKEN AMOUNTS
+    /////////////////////////////////////////////////*/
+    uint256 constant USDC_INITIAL_BALANCE = 10_000e6;
+    uint256 constant WETH_INITIAL_BALANCE = 100e18;
 
-    ///Addresses
+    /*/////////////////////////////////////////////////
+                    GLOBAL VARIABLES
+    /////////////////////////////////////////////////*/
+    address d;
+    address multisig;
+    uint16 constant DEADLINE = 600;
+
+    /*/////////////////////////////////////////////////
+                        MOCKED USERS
+    /////////////////////////////////////////////////*/
     address constant ownerCandidate = address(17);
     address constant user02 = address(2);
     address constant user03 = address(3);
+
+    /*/////////////////////////////////////////////////
+                    CALCULATION VARIABLES
+    /////////////////////////////////////////////////*/
+    uint8 constant BPS_FEE = 50;
+    uint8 constant SLIPPAGE_FACTOR = 97;
+    uint8 constant HUNDRED = 100;
 
     function setUp() public virtual {
         //1. Deploys DeployInit script
@@ -33,9 +55,17 @@ contract BaseTests is Test {
         //Set the configs to a global variable
         c = helperConfig.getConfig();
 
+        //Setup
+        vm.label(d, "Diamond");
+        multisig = c.multisig;
+        vm.label(multisig, "Multisig");
+
         vm.label(ownerCandidate, "OWNER_CANDIDATE");
         vm.label(user02, "USER02");
         vm.label(user03, "USER03");
     }
     
+    function _calculateSlippage(uint256 _amount) internal returns(uint256 minAmountOut_){
+        minAmountOut_ = (_amount * SLIPPAGE_FACTOR) / HUNDRED;
+    }
 }

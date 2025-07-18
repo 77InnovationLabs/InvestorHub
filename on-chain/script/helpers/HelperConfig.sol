@@ -114,7 +114,7 @@ contract HelperConfig is Script {
             stake: StakingSpecifications({
                 aavePool: address(0),
                 compoundController: address(0),
-                uniswapFactory: address(0),
+                uniswapFactory: 0x33128a8fC17869897dcE68Ed026d694621f6FDfD,
                 uniswapV3PositionManager: 0x03a520b32C04BF3bEEf7BEb72E919cf822Ed34f1
             }),
             cl: ChainlinkInfos({
@@ -147,7 +147,7 @@ contract HelperConfig is Script {
             stake: StakingSpecifications({
                 aavePool: address(0),
                 compoundController: address(0),
-                uniswapFactory: address(0),
+                uniswapFactory: 0x1F98431c8aD98523631AE4a59f267346ea31F984,
                 uniswapV3PositionManager: 0xC36442b4a4522E871399CD717aBDD847Ab11FE88
             }),
             cl: ChainlinkInfos({

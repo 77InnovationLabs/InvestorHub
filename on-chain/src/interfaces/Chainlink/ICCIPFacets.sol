@@ -3,18 +3,16 @@ pragma solidity 0.8.26;
 
 interface ICCIPFacets {
 
-    struct CCSwap{
-        address target;
+    struct SwapPayload{
         bytes path;
         address inputToken;
         uint256 deadline;
-        uint256 amountForTokenIn;
+        uint256 totalAmountIn;
         uint256 minAmountOut;
     }
 
     struct CCInvestment{
         SupportedTarget investmentTarget;
-        address target;
         address token0;
         address token1;
         uint24 fee;
@@ -37,17 +35,8 @@ interface ICCIPFacets {
 
     struct CCPayload{
         TransactionData transaction;
-        CCSwap[2] swaps;
+        SwapPayload[2] swaps;
         CCInvestment investment;
-    }
-
-    struct UniswapV3Payload{
-        address router;
-        bytes path;
-        address inputToken;
-        uint256 deadline;
-        uint256 amountInForToken0;
-        uint256 amountOut;
     }
 
     enum SupportedTarget{
@@ -55,4 +44,9 @@ interface ICCIPFacets {
         AaveV3, //Not Supported Yet, just for testing
         CompoundV3 //Not Supported Yet, just for testing
     }
+
+    function startCrossChainInvestment(
+        SwapPayload memory _uniswapV3Payload,
+        CCPayload memory _payload
+    ) external;
 }

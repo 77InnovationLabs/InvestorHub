@@ -21,7 +21,7 @@ import { LibTransfers } from "src/libraries/LibTransfers.sol";
 import { LibUniswapV3 } from "src/libraries/LibUniswapV3.sol";
 import { LibInvestment } from "src/libraries/LibInvestment.sol";
 
-contract CCIPReceiveFacet is CCIPReceiver, ICCIPFacets {
+contract CCIPReceiveFacet is CCIPReceiver {
 
     /*/////////////////////////////////////////////
                     Type Declarations
@@ -35,6 +35,9 @@ contract CCIPReceiveFacet is CCIPReceiver, ICCIPFacets {
     address immutable i_diamond;
     ///@notice immutable variable to store the usdc address
     IERC20 immutable i_usdc;
+    ///@notice immutable variables to store the Uniswap router and position handle
+    address immutable i_uniRouter;
+    address immutable i_uniPosition;
 
     ///@notice constant variable to store MAGIC NUMBERS
     uint8 private constant ZERO = 0;
@@ -70,10 +73,14 @@ contract CCIPReceiveFacet is CCIPReceiver, ICCIPFacets {
     constructor(
         address _diamond, 
         address _usdc, 
+        address _uniRouter,
+        address _uniPositionManager,
         address _router
     ) CCIPReceiver(_router){
         i_diamond = _diamond;
         i_usdc = IERC20(_usdc);
+        i_uniRouter = _uniRouter;
+        i_uniPosition = _uniPositionManager;
     }
 
     /*//////////////////////////////
@@ -89,7 +96,7 @@ contract CCIPReceiveFacet is CCIPReceiver, ICCIPFacets {
         if(address(this) != i_diamond) revert CCIPReceiveFacet_CallerIsNotDiamond(address(this), i_diamond);
 
         uint256 contractInitialBalance = i_usdc.balanceOf(address(this)) - _message.destTokenAmounts[0].amount;
-        CCPayload memory ccPayload;
+        ICCIPFacets.CCPayload memory ccPayload;
         (
             ccPayload.swaps[0],
             ccPayload.swaps[1], //if needed
@@ -97,9 +104,9 @@ contract CCIPReceiveFacet is CCIPReceiver, ICCIPFacets {
         ) = abi.decode(
             _message.data,
             (
-                CCSwap, 
-                CCSwap,
-                CCInvestment
+                ICCIPFacets.SwapPayload, 
+                ICCIPFacets.SwapPayload,
+                ICCIPFacets.CCInvestment
             )
         );
 
@@ -114,16 +121,15 @@ contract CCIPReceiveFacet is CCIPReceiver, ICCIPFacets {
             1. Approve of total USDC amount to swap the USDC into one or two different tokens
             2. One or two calls to Swap
         */
-        if(ccPayload.swaps[0].target != address(0)){
-            i_usdc.safeIncreaseAllowance(ccPayload.swaps[0].target, _message.destTokenAmounts[0].amount);
-        }
+        i_usdc.safeIncreaseAllowance(i_uniRouter, _message.destTokenAmounts[0].amount);
+
         if(ccPayload.swaps[0].path.length > ZERO){
             (uint256 token0Dust, uint256 amountReceived) = LibUniswapV3._handleSwap(
-                ccPayload.swaps[0].target, 
+                i_uniRouter, 
                 ccPayload.swaps[0].path, 
                 ccPayload.swaps[0].inputToken,
                 ccPayload.swaps[0].deadline,
-                ccPayload.swaps[0].amountForTokenIn,
+                ccPayload.swaps[0].totalAmountIn,
                 ccPayload.swaps[0].minAmountOut
             );
 
@@ -131,18 +137,18 @@ contract CCIPReceiveFacet is CCIPReceiver, ICCIPFacets {
         }
         if(ccPayload.swaps[1].path.length > ZERO){
             (uint256 token0Dust, uint256 amountReceived) = LibUniswapV3._handleSwap(
-                ccPayload.swaps[1].target, 
+                i_uniRouter, 
                 ccPayload.swaps[1].path, 
                 ccPayload.swaps[1].inputToken,
                 ccPayload.swaps[1].deadline,
-                ccPayload.swaps[1].amountForTokenIn,
+                ccPayload.swaps[1].totalAmountIn,
                 ccPayload.swaps[1].minAmountOut
             );
 
             if(token0Dust > ZERO) LibTransfers._handleRefunds(ccPayload.investment.recipient, ccPayload.swaps[1].inputToken, token0Dust);
         }
 
-        LibInvestment._routeInvestment(ccPayload.investment);
+        LibInvestment._routeInvestment(ccPayload.investment, i_uniPosition);
 
         if(i_usdc.balanceOf(address(this)) >= contractInitialBalance) revert CCIPReceiveFacet_IncorrectAmountOfTokensSpent();
     }

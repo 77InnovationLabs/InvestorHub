@@ -9,9 +9,6 @@ pragma solidity 0.8.26;
             Interfaces
 /////////////////////////////*/
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import { ISwapRouter } from "@uniV3-periphery/contracts/interfaces/ISwapRouter.sol";
-import { IV3SwapRouter } from "@uni-router-v3/contracts/interfaces/IV3SwapRouter.sol";
-import { INonFungiblePositionManager } from "src/interfaces/UniswapV3/INonFungiblePositionManager.sol";
 import { IRouterClient } from "@chainlink/contracts/src/v0.8/ccip/interfaces/IRouterClient.sol";
 import { IDataFeedsFacet } from "src/interfaces/Chainlink/IDataFeedsFacet.sol";
 import { ICCIPFacets } from "src/interfaces/Chainlink/ICCIPFacets.sol";
@@ -44,6 +41,8 @@ contract CCIPSendFacet is ICCIPFacets {
     IRouterClient immutable i_ccipRouter;
     ///@notice immutable variable to store the LINK token address
     IERC20 immutable i_link;
+    ///@notice immutable variable to store the uniswap router address
+    address immutable i_uniRouter;
 
     /*/////////////////////////////////////////////
                         Events
@@ -72,14 +71,16 @@ contract CCIPSendFacet is ICCIPFacets {
         address _diamond,
         address _vault,
         address _usdc, 
-        address _router,
-        address _link
+        address _ccpRouter,
+        address _link,
+        address _uniRouter
     ){
         i_diamond = _diamond;
         i_vault = _vault;
         i_usdc = _usdc;
-        i_ccipRouter = IRouterClient(_router);
+        i_ccipRouter = IRouterClient(_ccpRouter);
         i_link = IERC20(_link);
+        i_uniRouter = _uniRouter;
     }
 
     /*//////////////////////////////
@@ -92,12 +93,12 @@ contract CCIPSendFacet is ICCIPFacets {
                         that represent multiple steps of a cross-chain investment
     */
     function startCrossChainInvestment(
-        UniswapV3Payload memory _uniswapV3Payload,
+        SwapPayload memory _uniswapV3Payload,
         CCPayload memory _payload
     ) external {
         if(address(this) != i_diamond) revert CCIPSendFacet_CallerIsNotDiamond(address(this), i_diamond);
         
-        _uniswapV3Payload.amountInForToken0 = LibTransfers._handleTokenTransfers(_uniswapV3Payload.inputToken, _uniswapV3Payload.amountInForToken0);
+        _uniswapV3Payload.totalAmountIn = LibTransfers._handleTokenTransfers(_uniswapV3Payload.inputToken, _uniswapV3Payload.totalAmountIn);
 
         uint256 inputTokenDust;
         uint256 swapResult;
@@ -159,7 +160,7 @@ contract CCIPSendFacet is ICCIPFacets {
         @return swapResult_ the tokens received from the swap
     */
     function _verifySwapPayloadAndExecuteSwap(
-        UniswapV3Payload memory _uniswapV3Payload
+        SwapPayload memory _uniswapV3Payload
     ) private returns(uint256 inputTokenDust_, uint256 swapResult_){
         (address token0, address token1) = LibUniswapV3._extractTokens(_uniswapV3Payload.path);
         
@@ -167,12 +168,12 @@ contract CCIPSendFacet is ICCIPFacets {
         if(token1 != i_usdc) revert CCIPSendFacet_InvalidLocalSwapInput();
 
         (inputTokenDust_, swapResult_) = LibUniswapV3._handleSwap(
-            _uniswapV3Payload.router,
+            i_uniRouter,
             _uniswapV3Payload.path,
             _uniswapV3Payload.inputToken,
             _uniswapV3Payload.deadline,
-            _uniswapV3Payload.amountInForToken0,
-            _uniswapV3Payload.amountOut
+            _uniswapV3Payload.totalAmountIn,
+            _uniswapV3Payload.minAmountOut
         );
     }
 

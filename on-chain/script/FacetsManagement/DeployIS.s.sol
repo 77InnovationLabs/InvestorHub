@@ -360,7 +360,8 @@ contract DeployInitialStructureScript{
             config.vault,
             config.usdc,
             config.cl.ccipRouter,
-            config.cl.linkToken
+            config.cl.linkToken,
+            config.dex.routerUniV3
         );
         
         bytes4[] memory selectors = new bytes4[](1);
@@ -394,6 +395,8 @@ contract DeployInitialStructureScript{
         CCIPReceiveFacet facet = new CCIPReceiveFacet(
             config.diamond,
             config.usdc,
+            config.dex.routerUniV3,
+            config.stake.uniswapV3PositionManager,
             config.cl.ccipRouter
         );
         

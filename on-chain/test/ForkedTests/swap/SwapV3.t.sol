@@ -1,29 +1,30 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.26;
 
+import { console } from "forge-std/Console.sol";
+
 ///Test Helper
-import {ForkedHelper} from "test/helpers/ForkedHelper.t.sol";
+import { ForkedHelper } from "test/helpers/ForkedHelper.t.sol";
 
 ///Protocol Interfaces
 import { IStartSwapFacet } from "src/interfaces/UniswapV3/IStartSwapFacet.sol";
-import { IStartPositionFacet, INonFungiblePositionManager } from "src/interfaces/UniswapV3/IStartPositionFacet.sol";
+import { INonFungiblePositionManager } from "src/interfaces/UniswapV3/IStartPositionFacet.sol";
 
 contract SwapV3 is ForkedHelper {
-    //Setup
-    IStartSwapFacet swap = IStartSwapFacet(d);
-    IStartPositionFacet inv = IStartPositionFacet(d);
 
-    ///Test to ensure UniswapV3 - RouterV3 is functional
-    function test_uniCanSwapOnBaseMainnetFork() public baseMainnetMod {
-        bytes memory path = abi.encodePacked(address(BASE_USDC_MAINNET), USDC_WETH_POOL_FEE, address(BASE_WETH_MAINNET));
-        uint256 totalAmountIn = 6000*10**6;
-        uint256 amountInSwap = 3000*10**6;
-        uint256 amountOutSwap = 98e17;
+    /**
+        @notice Function to test if a user with one of the token's pool
+        successfully executes a single swap and initiate a position
+    */
+    function test_oneTokenSwapToPool() public {
 
-        assertEq(BASE_USDC_MAINNET.balanceOf(d), 0);
-        assertEq(BASE_WETH_MAINNET.balanceOf(d), 0);
-
-        assertEq(BASE_USDC_MAINNET.balanceOf(c.multisig), 0);
+        /*/////////////////////////////////////////////////
+                        PAYLOAD INITIALIZATION
+        /////////////////////////////////////////////////*/
+        bytes memory path = abi.encodePacked(BASE_USDC_ADDRESS, BASE_USDC_WETH_POOL_FEE, BASE_WETH_ADDRESS);
+        uint256 totalAmountIn = 6000e6;
+        uint256 amountInSwap = 3000e6;
+        uint256 amountOutSwap = 1e18;
 
         IStartSwapFacet.DexPayload memory dexPayload = IStartSwapFacet.DexPayload({
             path: path,
@@ -32,74 +33,123 @@ contract SwapV3 is ForkedHelper {
         });
 
         INonFungiblePositionManager.MintParams memory stakePayload = INonFungiblePositionManager.MintParams({
-            token0: address(BASE_USDC_MAINNET),
-            token1: address(BASE_WETH_MAINNET),
-            fee: USDC_WETH_POOL_FEE,
-            tickLower: MIN_TICK,
-            tickUpper: MAX_TICK,
+            token0: BASE_USDC_ADDRESS,
+            token1: BASE_WETH_ADDRESS,
+            fee: BASE_USDC_WETH_POOL_FEE,
+            tickLower: _findNearestValidTick(true, BASE_USDC_ADDRESS, BASE_WETH_ADDRESS, BASE_USDC_WETH_POOL_FEE),
+            tickUpper: _findNearestValidTick(false, BASE_USDC_ADDRESS, BASE_WETH_ADDRESS, BASE_USDC_WETH_POOL_FEE),
             amount0Desired: amountInSwap,
             amount1Desired: amountOutSwap,
-            amount0Min: 0,
-            amount1Min: 0,
+            amount0Min: _calculateSlippage(amountInSwap),
+            amount1Min: _calculateSlippage(amountOutSwap),
             recipient: user02,
-            deadline: block.timestamp + 600
+            deadline: block.timestamp + DEADLINE
         });
 
+        /*/////////////////////////////////////////////////
+                            PRE VALIDATIONS
+        /////////////////////////////////////////////////*/
+        //Diamond
+        uint256 diamondUsdcBalanceBefore = BASE_USDC_MAINNET.balanceOf(d);
+        uint256 diamondWEthBalanceBefore = BASE_WETH_MAINNET.balanceOf(d);
+        //MultiSig
+        uint256 msUsdcBalanceBefore = BASE_USDC_MAINNET.balanceOf(multisig);
+        uint256 msWEthBalanceBefore = BASE_WETH_MAINNET.balanceOf(multisig);
+        //User
+        uint256 userUsdcBalanceBefore = BASE_USDC_MAINNET.balanceOf(user02);
+        uint256 userWEthBalanceBefore = BASE_WETH_MAINNET.balanceOf(user02);
+
+        /*/////////////////////////////////////////////////
+                        TRANSACTION EXECUTION
+        /////////////////////////////////////////////////*/
         vm.startPrank(user02);
         BASE_USDC_MAINNET.approve(d, totalAmountIn);
         swap.startSwap(totalAmountIn, dexPayload, stakePayload);
         vm.stopPrank();
 
+        /*/////////////////////////////////////////////////
+                            POST VALIDATIONS
+        /////////////////////////////////////////////////*/
+        console.log("Previous ms WETH balance: ", msWEthBalanceBefore);
+        console.log("New ms WETH balance: ", BASE_WETH_MAINNET.balanceOf(multisig));
+        console.log("ms WETH fee received: ", (amountOutSwap / BPS_FEE));
+        console.log("ms previous WETH balance plus the fee received: ", msWEthBalanceBefore + (amountOutSwap / BPS_FEE));
         ///Ensure the Multisig receives the protocol fee
-        assertGt(BASE_USDC_MAINNET.balanceOf(c.multisig), (amountInSwap / 50));
-        assertGt(BASE_WETH_MAINNET.balanceOf(c.multisig), (amountOutSwap / 50));
+        assertEq(BASE_USDC_MAINNET.balanceOf(multisig), msUsdcBalanceBefore + (amountInSwap / BPS_FEE));
+        assertGt(BASE_WETH_MAINNET.balanceOf(multisig), msWEthBalanceBefore + (amountOutSwap / BPS_FEE));
         ///Ensure protocol doesn't hold any asset
-        assertEq(BASE_USDC_MAINNET.balanceOf(d), 0);
-        assertEq(BASE_WETH_MAINNET.balanceOf(d), 0);
+        assertEq(BASE_USDC_MAINNET.balanceOf(d), diamondUsdcBalanceBefore);
+        assertEq(BASE_WETH_MAINNET.balanceOf(d), diamondWEthBalanceBefore);
+        ///Validate user balance
+        assertGt(BASE_USDC_MAINNET.balanceOf(user02), userUsdcBalanceBefore - totalAmountIn);
+        assertGt(BASE_WETH_MAINNET.balanceOf(user02), userWEthBalanceBefore);
+        //Validate if the user receives the NFT
+        assertEq(nft.ownerOf(2935624), user02);
     }
 
-    ///Test to ensure UniswapV3 - RouterV2 is functional
-    // function test_uniCanSwapOnArbMainnetFork() public arbMainnetMod {
-    //     bytes memory path = abi.encodePacked(address(ARB_USDC_MAINNET), USDC_WETH_POOL_FEE, address(ARB_WETH_MAINNET));
-    //     uint256 totalAmountIn = 6000*10**6;
-    //     uint256 amountInSwap = 1850*10**6;
-    //     uint256 amountOutSwap = 1*10**18;
+    /**
+        @notice Function to test if a user with none of the token's pool
+        successfully exchange a third token into both of the token's pool
+        and initialize a position
+    */
+    function test_noneTokenSwapToPoolsTokens() public {
 
-    //     assertEq(ARB_USDC_MAINNET.balanceOf(address(uniSwapWrapper)), 0);
-    //     assertEq(ARB_WETH_MAINNET.balanceOf(address(uniSwapWrapper)), 0);
+        /*/////////////////////////////////////////////////
+                        PAYLOAD INITIALIZATION
+        /////////////////////////////////////////////////*/
+        uint256 totalAmountIn = 6000e6;
+        uint256 amountInSwap = 3000e6;
+        uint256 amountOutSwap0 = 15e17;
+        uint256 amountOutSwap1 = 200e18;
 
-    //     assertEq(ARB_USDC_MAINNET.balanceOf(c.multisig), 0);
+        bytes memory path0 = abi.encodePacked(BASE_USDC_ADDRESS, BASE_USDC_WETH_POOL_FEE, BASE_WETH_ADDRESS);
+        bytes memory path1 = abi.encodePacked(BASE_USDC_ADDRESS, BASE_USDC_AERO_POOL_FEE, BASE_AERO_ADDRESS);
 
-    //     IStartSwapFacet.DexPayload memory dexPayload = IStartSwapFacet.DexPayload({
-    //         path: path,
-    //         amountInForInputToken: amountInSwap,
-    //         deadline: block.timestamp + 60
-    //     });
+        IStartSwapFacet.DexPayload[] memory dexPayload = new IStartSwapFacet.DexPayload[](2);
 
-    //     INonFungiblePositionManager.MintParams memory stakePayload = INonFungiblePositionManager.MintParams({
-    //         token0: address(ARB_USDC_MAINNET),
-    //         token1: address(ARB_WETH_MAINNET),
-    //         fee: USDC_WETH_POOL_FEE,
-    //         tickLower: MIN_TICK,
-    //         tickUpper: MAX_TICK,
-    //         amount0Desired: amountInSwap,
-    //         amount1Desired: amountOutSwap,
-    //         amount0Min: 0,
-    //         amount1Min: 0,
-    //         recipient: user02,
-    //         deadline: block.timestamp + 60
-    //     });
+        dexPayload[0] = IStartSwapFacet.DexPayload({
+            path: path0,
+            amountInForInputToken: amountInSwap,
+            deadline: 0
+        });
 
-    //     vm.startPrank(user02);
-    //     ARB_USDC_MAINNET.approve(d, totalAmountIn);
-    //     swap.startSwap(totalAmountIn, dexPayload, stakePayload);
-    //     vm.stopPrank();
+        dexPayload[1] = IStartSwapFacet.DexPayload({
+            path: path1,
+            amountInForInputToken: amountInSwap,
+            deadline: 0
+        });
 
-    //     ///Ensure the Multisig receives the protocol fee
-    //     assertGt(ARB_USDC_MAINNET.balanceOf(c.multisig), (amountInSwap / 50));
-    //     assertGt(ARB_WETH_MAINNET.balanceOf(c.multisig), (amountOutSwap / 50));
-    //     ///Ensure protocol doesn't hold any asset
-    //     assertEq(ARB_USDC_MAINNET.balanceOf(d), 0);
-    //     assertEq(ARB_WETH_MAINNET.balanceOf(d), 0);
-    // }
+        INonFungiblePositionManager.MintParams memory stakePayload = INonFungiblePositionManager.MintParams({
+            token0: BASE_WETH_ADDRESS,
+            token1: BASE_AERO_ADDRESS,
+            fee: BASE_WETH_AERO_POOL_FEE,
+            tickLower: _findNearestValidTick(true, BASE_WETH_ADDRESS, BASE_AERO_ADDRESS, BASE_WETH_AERO_POOL_FEE),
+            tickUpper: _findNearestValidTick(false, BASE_WETH_ADDRESS, BASE_AERO_ADDRESS, BASE_WETH_AERO_POOL_FEE),
+            amount0Desired: amountOutSwap0,
+            amount1Desired: amountOutSwap1,
+            amount0Min: _calculateSlippage(amountOutSwap0),
+            amount1Min: _calculateSlippage(amountOutSwap1),
+            recipient: user02,
+            deadline: block.timestamp + DEADLINE
+        });
+
+        /*/////////////////////////////////////////////////
+                            PRE VALIDATIONS
+        /////////////////////////////////////////////////*/
+
+        /*/////////////////////////////////////////////////
+                        TRANSACTION EXECUTION
+        /////////////////////////////////////////////////*/
+        vm.startPrank(user02);
+        BASE_USDC_MAINNET.approve(d, totalAmountIn);
+        swap.startSwap(BASE_USDC_ADDRESS, totalAmountIn, dexPayload, stakePayload);
+        vm.stopPrank();
+
+        /*/////////////////////////////////////////////////
+                            POST VALIDATIONS
+        /////////////////////////////////////////////////*/
+
+        //Validate if the user receives the NFT
+        // assertEq(nft.ownerOf(2935624), user02);
+    }
 }

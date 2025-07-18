@@ -8,7 +8,8 @@ remappings = [
                 "@uniswap/v3-core/contracts/=lib/v3-core/contracts/",
                 "@bytes-utils/=node_modules/solidity-bytes-utils/",
                 "@uni-router-v3/contracts/=lib/swap-router-contracts/contracts/",
-                "@chainlink/contracts/=lib/chainlink/contracts/"
+                "@chainlink/contracts/=lib/chainlink/contracts/",
+                "cl/src/=lib/chainlink-local/src/"
              ]
              
 [rpc_endpoints]

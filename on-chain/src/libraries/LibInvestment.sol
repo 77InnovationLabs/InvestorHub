@@ -35,11 +35,11 @@ library LibInvestment {
         @notice Internal function used by CCIPReceiveFacet contract to route Cross-chain investments
         @param _investment the payload received through the cross-chain message
     */
-    function _routeInvestment(ICCIPFacets.CCInvestment memory _investment) internal {
+    function _routeInvestment(ICCIPFacets.CCInvestment memory _investment, address _target) internal {
 
         if(_investment.investmentTarget == ICCIPFacets.SupportedTarget.UniswapV3){
 
-            _handleUniswapCrossChainInvestment(_investment);
+            _handleUniswapCrossChainInvestment(_investment, _target);
 
         } else if(_investment.investmentTarget == ICCIPFacets.SupportedTarget.AaveV3){
 
@@ -56,14 +56,11 @@ library LibInvestment {
         @notice Private function to open UniswapV3 positions
         @param _investment the payload receive to create Uniswap payload
     */
-    function _handleUniswapCrossChainInvestment(ICCIPFacets.CCInvestment memory _investment) private {
+    function _handleUniswapCrossChainInvestment(ICCIPFacets.CCInvestment memory _investment, address _target) private {
 
-        if(_investment.target != address(0)){
-            IERC20(_investment.token0).safeIncreaseAllowance(_investment.target, _investment.amount0Desired);
-        }
-        if(_investment.target != address(0)){
-            IERC20(_investment.token1).safeIncreaseAllowance(_investment.target, _investment.amount1Desired);
-        }
+        IERC20(_investment.token0).safeIncreaseAllowance(_target, _investment.amount0Desired);
+
+        IERC20(_investment.token1).safeIncreaseAllowance(_target, _investment.amount1Desired);
 
         INonFungiblePositionManager.MintParams memory payload = INonFungiblePositionManager.MintParams({
             token0: _investment.token0,
@@ -80,7 +77,7 @@ library LibInvestment {
         });
 
         // Mint position and return the results
-        (uint256 tokenId, uint256 liquidity, uint256 amount0, uint256 amount1) = INonFungiblePositionManager(_investment.target).mint(payload);
+        (uint256 tokenId, uint256 liquidity, uint256 amount0, uint256 amount1) = INonFungiblePositionManager(_target).mint(payload);
 
         // Refund any dust left in the contract
         LibTransfers._handleRefunds(_investment.recipient, _investment.token0, amount0 - _investment.amount0Min);
