@@ -101,7 +101,7 @@ contract HelperConfig is Script {
         mainnetNetworkConfig = NetworkConfig({
             admin: vm.envAddress("ADMIN_TESTNET_PUBLIC_KEY"),
             multisig: vm.envAddress("MULTISIG_TESTNET_FAKE_ADDRESS"),
-            vault: address(0),
+            vault: vm.envAddress("VAULT_TESTNET_FAKE_ADDRESS"), //update with the address in the future
             ownershipFacet: address(0),
             cutFacet: address(0),
             loupeFacet: address(0),
@@ -134,7 +134,7 @@ contract HelperConfig is Script {
         mainnetNetworkConfig = NetworkConfig({
             admin: vm.envAddress("ADMIN_TESTNET_PUBLIC_KEY"),
             multisig: vm.envAddress("MULTISIG_TESTNET_FAKE_ADDRESS"), //Burner Wallet for Forked Tests
-            vault: address(0),
+            vault: vm.envAddress("VAULT_TESTNET_FAKE_ADDRESS"), //update with the address in the future
             ownershipFacet: address(0),
             cutFacet: address(0),
             loupeFacet: address(0),

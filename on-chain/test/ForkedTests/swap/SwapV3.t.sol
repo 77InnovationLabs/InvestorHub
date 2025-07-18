@@ -24,7 +24,7 @@ contract SwapV3 is ForkedHelper {
         bytes memory path = abi.encodePacked(BASE_USDC_ADDRESS, BASE_USDC_WETH_POOL_FEE, BASE_WETH_ADDRESS);
         uint256 totalAmountIn = 6000e6;
         uint256 amountInSwap = 3000e6;
-        uint256 amountOutSwap = 1e18;
+        uint256 amountOutSwap = 0.83 ether;
 
         IStartSwapFacet.DexPayload memory dexPayload = IStartSwapFacet.DexPayload({
             path: path,
@@ -99,8 +99,8 @@ contract SwapV3 is ForkedHelper {
         /////////////////////////////////////////////////*/
         uint256 totalAmountIn = 6000e6;
         uint256 amountInSwap = 3000e6;
-        uint256 amountOutSwap0 = 15e17;
-        uint256 amountOutSwap1 = 200e18;
+        uint256 amountOutSwap0 = 0.83 ether;
+        uint256 amountOutSwap1 = 3.250 ether;
 
         bytes memory path0 = abi.encodePacked(BASE_USDC_ADDRESS, BASE_USDC_WETH_POOL_FEE, BASE_WETH_ADDRESS);
         bytes memory path1 = abi.encodePacked(BASE_USDC_ADDRESS, BASE_USDC_AERO_POOL_FEE, BASE_AERO_ADDRESS);

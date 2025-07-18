@@ -88,7 +88,7 @@ contract ForkedHelper is BaseTests {
                 CREATE BASE FORK E DEPLOY CONTRACTS V2
         //////////////////////////////////////////////////*/
         baseMainnet = vm.createSelectFork(BASE_MAINNET_RPC_URL);
-        vm.rollFork(29_441_000);
+        vm.rollFork(33_042_825);
 
         //Distribute eth balance
         deal(BASE_USDC_ADDRESS, user02, USDC_INITIAL_BALANCE);
@@ -106,10 +106,6 @@ contract ForkedHelper is BaseTests {
         ccipLocal = new CCIPLocalSimulatorFork();
         swap = IStartSwapFacet(d);
 
-        ///Ensuring Consistency
-        vm.makePersistent(address(ccipLocal));
-        vm.makePersistent(d);
-
         // Labeling
         vm.label(0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913, "USDC");
         vm.label(0x4200000000000000000000000000000000000006, "wETH");
@@ -125,7 +121,7 @@ contract ForkedHelper is BaseTests {
         //////////////////////////////////////////////////*/
 
         arbMainnet = vm.createSelectFork(ARBITRUM_MAINNET_RPC_URL);
-        vm.rollFork(330_415_000);
+        vm.rollFork(359_126_776);
 
         //Distribute eth balance
         deal(ARB_USDC_ADDRESS, user02, USDC_INITIAL_BALANCE);
@@ -139,9 +135,6 @@ contract ForkedHelper is BaseTests {
 
         super.setUp();
         dArb = d;
-        ccipLocal = new CCIPLocalSimulatorFork();
-        vm.makePersistent(address(ccipLocal));
-        vm.makePersistent(dArb);
     }
 
     /*//////////////////////////////////////////////////////

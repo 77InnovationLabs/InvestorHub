@@ -13,9 +13,9 @@
 [submodule "on-chain/lib/swap-router-contracts"]
 	path = on-chain/lib/swap-router-contracts
 	url = https://github.com/uniswap/swap-router-contracts
-[submodule "on-chain/lib/chainlink"]
-	path = on-chain/lib/chainlink
-	url = https://github.com/smartcontractkit/chainlink
 [submodule "on-chain/lib/chainlink-local"]
 	path = on-chain/lib/chainlink-local
 	url = https://github.com/smartcontractkit/chainlink-local
+[submodule "on-chain/lib/chainlink-brownie-contracts"]
+	path = on-chain/lib/chainlink-brownie-contracts
+	url = https://github.com/smartcontractkit/chainlink-brownie-contracts

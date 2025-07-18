@@ -65,7 +65,7 @@ contract BaseTests is Test {
         vm.label(user03, "USER03");
     }
     
-    function _calculateSlippage(uint256 _amount) internal returns(uint256 minAmountOut_){
+    function _calculateSlippage(uint256 _amount) internal pure returns(uint256 minAmountOut_){
         minAmountOut_ = (_amount * SLIPPAGE_FACTOR) / HUNDRED;
     }
 }
