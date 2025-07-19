@@ -19,7 +19,7 @@ import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { IERC721 } from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
 //Chainlink
-import { CCIPLocalSimulatorFork } from "cl/src/ccip/CCIPLocalSimulatorFork.sol";
+import { CCIPLocalSimulatorFork, Register } from "cl/src/ccip/CCIPLocalSimulatorFork.sol";
 
 contract ForkedHelper is BaseTests {
 
@@ -50,6 +50,7 @@ contract ForkedHelper is BaseTests {
     address constant ARB_USDC_ADDRESS = 0xaf88d065e77c8cC2239327C5EDb3A432268e5831;
     address constant ARB_WETH_ADDRESS = 0x82aF49447D8a07e3bd95BD0d56f35241523fBab1;
     address constant ARB_ARB_ADDRESS = 0x912CE59144191C1204E64559FE8253a0e49E6548;
+    address constant ARB_LINK_ADDRESS = 0xf97f4df75117a78c1A5a0DBb814Af92458539FB4;
     IERC20 constant ARB_USDC_MAINNET = IERC20(ARB_USDC_ADDRESS);
     IERC20 constant ARB_WETH_MAINNET = IERC20(ARB_WETH_ADDRESS);
     IERC20 constant ARB_ARB_MAINNET = IERC20(ARB_ARB_ADDRESS);
@@ -81,7 +82,7 @@ contract ForkedHelper is BaseTests {
     /////////////////////////////////////////////////*/
     CCIPLocalSimulatorFork ccipLocal;
     uint64 constant ARB_CHAIN_SELECTOR = 4949039107694359620;
-    uint256 constant CCIP_GAS_LIMIT = 300_000;
+    uint256 constant CCIP_GAS_LIMIT = 1_000_000;
     address dArb;
 
     function setUp() public override {
@@ -94,6 +95,7 @@ contract ForkedHelper is BaseTests {
 
         super.setUp();
         ccipLocal = new CCIPLocalSimulatorFork();
+        _setArbitrumDetails();
         swap = IStartSwapFacet(d);
 
         //Distribute eth balance
@@ -126,18 +128,21 @@ contract ForkedHelper is BaseTests {
         arbMainnet = vm.createSelectFork(ARBITRUM_MAINNET_RPC_URL);
         vm.rollFork(359_126_776);
 
+        super.setUp();
+
         //Distribute eth balance
         deal(ARB_USDC_ADDRESS, user02, USDC_INITIAL_BALANCE);
         deal(ARB_USDC_ADDRESS, user03, USDC_INITIAL_BALANCE);
         deal(ARB_WETH_ADDRESS, user02, WETH_INITIAL_BALANCE);
         deal(ARB_WETH_ADDRESS, user03, WETH_INITIAL_BALANCE);
 
-        // Labeling
-        vm.label(0xaf88d065e77c8cC2239327C5EDb3A432268e5831, "USDC Contract");
-        vm.label(0x82aF49447D8a07e3bd95BD0d56f35241523fBab1, "wETH Contract");
-
-        super.setUp();
         dArb = d;
+
+        // Labeling
+        vm.label(0xaf88d065e77c8cC2239327C5EDb3A432268e5831, "USDC");
+        vm.label(0x82aF49447D8a07e3bd95BD0d56f35241523fBab1, "wETH");
+        vm.label(dArb, "Diamond Arb");
+
     }
 
     /*//////////////////////////////////////////////////////
@@ -194,5 +199,25 @@ contract ForkedHelper is BaseTests {
             // Find the nearest valid tick less than or equal to MAX_TICK, straightforward due to floor division.
             return (MAX_TICK / tickSpacing) * tickSpacing;
         }
+    }
+
+    /*//////////////////////////////////////////////////////
+                        CCIP Helpers
+    //////////////////////////////////////////////////////*/
+    function _setArbitrumDetails() internal {
+        ccipLocal.setNetworkDetails(
+            helperConfig.ARBITRUM_MAINNET_CHAIN_ID(), 
+            Register.NetworkDetails({
+                chainSelector: 4949039107694359620,
+                routerAddress: 0x141fa059441E0ca23ce184B6A78bafD2A517DdE8,
+                linkAddress: ARB_LINK_ADDRESS,
+                wrappedNativeAddress: ARB_WETH_ADDRESS,
+                ccipBnMAddress: address(0),
+                ccipLnMAddress: address(0),
+                rmnProxyAddress: 0xC311a21e6fEf769344EB1515588B9d535662a145,
+                registryModuleOwnerCustomAddress: 0x1f1df9f7fc939E71819F766978d8F900B816761b,
+                tokenAdminRegistryAddress: 0x39AE1032cF4B334a1Ed41cdD0833bdD7c7E7751E
+            })
+        );
     }
 }

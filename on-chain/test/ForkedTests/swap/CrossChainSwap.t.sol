@@ -17,14 +17,15 @@ import { Client } from "@chainlink/contracts/src/v0.8/ccip/libraries/Client.sol"
 contract CrossChainSwap is ForkedHelper {
 
     function test_startCrossChainInvestment() external baseMainnetMod{
-        uint256 totalAmountIn = 10e18;
+        uint256 totalAmountIn = 1e18;
+        uint256 totalMinAmountOut = 3_500e6;
         
         vm.startPrank(user02);
         BASE_WETH_MAINNET.approve(d, totalAmountIn);
 
         ICCIPFacets(d).startCrossChainInvestment(
-            _generateLocalSwapPayload(totalAmountIn),
-            _generateCompleteCCPayload()
+            _generateLocalSwapPayload(totalAmountIn, totalMinAmountOut),
+            _generateCompleteCCPayload(totalMinAmountOut)
         );
 
         ccipLocal.switchChainAndRouteMessage(arbMainnet);
@@ -32,7 +33,7 @@ contract CrossChainSwap is ForkedHelper {
         vm.stopPrank();
     }
 
-    function _generateLocalSwapPayload(uint256 _totalAmountIn) internal pure returns(ICCIPFacets.SwapPayload memory payload_){
+    function _generateLocalSwapPayload(uint256 _totalAmountIn, uint256 _totalMinAmountOut) internal pure returns(ICCIPFacets.SwapPayload memory payload_){
         bytes memory path0 = abi.encodePacked(BASE_WETH_ADDRESS, BASE_USDC_WETH_POOL_FEE, BASE_USDC_ADDRESS);
         
         payload_ = ICCIPFacets.SwapPayload({
@@ -40,23 +41,23 @@ contract CrossChainSwap is ForkedHelper {
             inputToken: BASE_WETH_ADDRESS,
             deadline: 0,
             totalAmountIn: _totalAmountIn,
-            minAmountOut: 35_000e6
+            minAmountOut: _totalMinAmountOut
         });
     }
 
-    function _generateCompleteCCPayload() internal view returns(ICCIPFacets.CCPayload memory payload_){
+    function _generateCompleteCCPayload(uint256 _totalMinAmountOut) internal view returns(ICCIPFacets.CCPayload memory payload_){
         payload_ = ICCIPFacets.CCPayload ({
-            transaction: _generateTransactionData(),
-            swaps: _generateCCSwapPayload(),
+            transaction: _generateTransactionData(_totalMinAmountOut),
+            swaps: _generateCCSwapPayload(_totalMinAmountOut),
             investment: _generateInvestmentPayload()
         });
     }
 
-    function _generateTransactionData() internal view returns(ICCIPFacets.TransactionData memory tx_){
+    function _generateTransactionData(uint256 _totalMinAmountOut) internal view returns(ICCIPFacets.TransactionData memory tx_){
         tx_ = ICCIPFacets.TransactionData({
             chainSelector: ARB_CHAIN_SELECTOR,
             receiverContract: dArb,
-            amountToSend: 35_000e6,
+            amountToSend: _totalMinAmountOut,
             extraArgs: Client._argsToBytes(
                 Client.EVMExtraArgsV2({
                     gasLimit: CCIP_GAS_LIMIT,
@@ -66,11 +67,11 @@ contract CrossChainSwap is ForkedHelper {
         });
     }
 
-    function _generateCCSwapPayload() internal view returns(ICCIPFacets.SwapPayload[2] memory payload_){
-        uint256 totalAmountIn0 = 15_000e6;
-        uint256 totalAmountIn1 = 15_000e6;
-        uint256 minAmountOut0 = 4.1 ether;
-        uint256 minAmountOut1 = 33_000e18;
+    function _generateCCSwapPayload(uint256 _totalMinAmountOut) internal view returns(ICCIPFacets.SwapPayload[2] memory payload_){
+        uint256 totalAmountIn0 = _totalMinAmountOut / 2;
+        uint256 totalAmountIn1 = _totalMinAmountOut / 2;
+        uint256 minAmountOut0 = 0.41 ether;
+        uint256 minAmountOut1 = 3_300e18;
 
         uint256 deadline= block.timestamp + 60;
         bytes memory path0 = abi.encodePacked(ARB_USDC_ADDRESS, ARB_USDC_WETH_POOL_FEE, ARB_WETH_ADDRESS);

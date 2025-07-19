@@ -11,17 +11,9 @@ import { DeployInitialStructureScript } from "script/FacetsManagement/DeployIS.s
 
 //Protocol Base Contracts
 import { Diamond } from "../src/Diamond.sol";
-import { OwnershipFacet } from "../src/diamond/OwnershipFacet.sol";
 import { DiamondCutFacet } from "../src/diamond/DiamondCutFacet.sol";
 import { DiamondLoupeFacet } from "../src/diamond/DiamondLoupeFacet.sol";
 import { DiamondInitializer } from "src/upgradeInitializers/DiamondInitializer.sol";
-
-//Import Interfaces
-import { IDiamond } from "src/interfaces/IDiamond.sol";
-import { IDiamondCut } from "src/interfaces/IDiamondCut.sol";
-import { IDiamondLoupe } from "src/interfaces/IDiamondLoupe.sol";
-import { IStartSwapFacet } from "src/interfaces/UniswapV3/IStartSwapFacet.sol";
-import { IStartPositionFacet } from "src/interfaces/UniswapV3/IStartPositionFacet.sol";
 
 contract DeployInit is Script, DeployInitialStructureScript {
 

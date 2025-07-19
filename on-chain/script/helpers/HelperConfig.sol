@@ -47,11 +47,12 @@ contract HelperConfig is Script {
                             STATE VARIABLES
     //////////////////////////////////////////////////////////////*/
     // Magic Number Removal
-    uint256 constant LOCAL_CHAIN_ID = 31337;
-    uint256 constant ARBITRUM_MAINNET_CHAIN_ID = 42161;
-    uint256 constant BASE_MAINNET_CHAIN_ID = 8453;
-    uint256 constant FUJI_CHAIN_ID = 43113;
-    uint256 constant SEPOLIA_CHAIN_ID = 11155111;
+    uint256 public constant LOCAL_CHAIN_ID = 31337;
+    uint256 public constant BASE_MAINNET_CHAIN_ID = 8453;
+    uint256 public constant ARBITRUM_MAINNET_CHAIN_ID = 42161;
+    uint256 public constant FUJI_CHAIN_ID = 43113;
+    uint256 public constant SEPOLIA_CHAIN_ID = 11155111;
+    uint256 public constant BASE_SEPOLIA_CHAIN_ID = 84532;
 
     // Local network state variables
     NetworkConfig public s_localNetworkConfig;
@@ -72,6 +73,7 @@ contract HelperConfig is Script {
         s_networkConfigs[BASE_MAINNET_CHAIN_ID] = getMainnetBaseConfig();
         s_networkConfigs[FUJI_CHAIN_ID] = getFujiConfig();
         s_networkConfigs[SEPOLIA_CHAIN_ID] = getSepoliaConfig();
+        s_networkConfigs[BASE_SEPOLIA_CHAIN_ID] = getBaseSepoliaConfig();
     }
 
     function setConfig(uint256 chainId, NetworkConfig memory networkConfig) public {
@@ -203,11 +205,11 @@ contract HelperConfig is Script {
             admin: vm.envAddress("ADMIN_TESTNET_PUBLIC_KEY"),
             multisig: vm.envAddress("MULTISIG_TESTNET_FAKE_ADDRESS"), //Burner Wallet for Forked Tests
             vault: 0xacEa951B2E9b58Ce7914044Eaf41E2a4D04c7748,
-            ownershipFacet: address(0),
-            cutFacet: address(0),
-            loupeFacet: address(0),
-            diamond: address(0),
-            initializer: address(0),
+            ownershipFacet: 0x81Fd19D151F50668676209885Ae51Ee4960cdE48,
+            cutFacet: 0xA51eB2B94f1a5484f6Ce008BC966aA4E304acd9E,
+            loupeFacet: 0xCb04B49F7b91346A95b6529baddF0468E100c16B,
+            diamond: 0x7a91f129E8837f4E464bF80C95ebf770232cC917,
+            initializer: 0xDF407457648A2aa756346461C13Db181325b6bd7,
             usdc: 0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238,
             dex: DexSpecifications({
                 routerUniV3: 0x3bFA4769FB09eefC5a80d6E87c3B9C650f7Ae48E
@@ -226,6 +228,38 @@ contract HelperConfig is Script {
                 functionsRouter: 0xb83E47C2bC239B3bf370bc41e1459A34b41238D0,
                 donId: 0x66756e2d657468657265756d2d7365706f6c69612d3100000000000000000000,
                 subscriptionId: 4382
+            })
+        });
+    }
+
+    function getBaseSepoliaConfig() public view returns (NetworkConfig memory baseSepoliaNetworkConfig_) {
+        baseSepoliaNetworkConfig_ = NetworkConfig({
+            admin: vm.envAddress("ADMIN_TESTNET_PUBLIC_KEY"),
+            multisig: vm.envAddress("MULTISIG_TESTNET_FAKE_ADDRESS"), //Burner Wallet for Forked Tests
+            vault: 0xacEa951B2E9b58Ce7914044Eaf41E2a4D04c7748,
+            ownershipFacet: 0xD521d2f02eD5f309248607aAEa47B8835072a253,
+            cutFacet: 0x6Cbe125483252D394e152295de1BaD389b7adE4C,
+            loupeFacet: 0x6340672A62eD989B90c4fBb399Dc84083d491909,
+            diamond: 0xeE5d3c9C0C9F0a93773bAFAADe600B144318b366,
+            initializer: 0xA501e51E5902879F28b5Bb6F74B701E7FD997625,
+            usdc: 0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238,
+            dex: DexSpecifications({
+                routerUniV3: 0x3bFA4769FB09eefC5a80d6E87c3B9C650f7Ae48E
+            }),
+            stake: StakingSpecifications({
+                aavePool: address(0),
+                compoundController: address(0),
+                uniswapFactory: 0x0227628f3F023bb0B980b67D528571c95c6DaC1c,
+                uniswapV3PositionManager: 0x1238536071E1c677A632429e3655c799b22cDA52
+            }),
+            cl: ChainlinkInfos({
+                ccipRouter: 0xD3b06cEbF099CE7DA4AcCf578aaebFDBd6e88a93,
+                linkToken: 0xE4aB69C077896252FAFBD49EFD26B5D171A32410,
+                feedsAggregator: 0xb113F5A928BCfF189C998ab20d753a47F9dE5A61,
+                heartbeat: 1_200,
+                functionsRouter: 0xf9B8fc078197181C841c296C876945aaa425B278,
+                donId: 0x66756e2d626173652d7365706f6c69612d310000000000000000000000000000,
+                subscriptionId: 411
             })
         });
     }
