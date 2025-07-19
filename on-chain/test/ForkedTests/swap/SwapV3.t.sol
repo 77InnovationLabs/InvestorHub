@@ -16,7 +16,7 @@ contract SwapV3 is ForkedHelper {
         @notice Function to test if a user with one of the token's pool
         successfully executes a single swap and initiate a position
     */
-    function test_oneTokenSwapToPool() public {
+    function test_oneTokenSwapToPool() public baseMainnetMod {
 
         /*/////////////////////////////////////////////////
                         PAYLOAD INITIALIZATION
@@ -84,7 +84,7 @@ contract SwapV3 is ForkedHelper {
         assertGt(BASE_USDC_MAINNET.balanceOf(user02), userUsdcBalanceBefore - totalAmountIn);
         assertGt(BASE_WETH_MAINNET.balanceOf(user02), userWEthBalanceBefore);
         //Validate if the user receives the NFT
-        assertEq(nft.ownerOf(2935624), user02);
+        assertEq(nft.ownerOf(3_556_073), user02);
     }
 
     /**
@@ -92,7 +92,7 @@ contract SwapV3 is ForkedHelper {
         successfully exchange a third token into both of the token's pool
         and initialize a position
     */
-    function test_noneTokenSwapToPoolsTokens() public {
+    function test_noneTokenSwapToPoolsTokens() public baseMainnetMod {
 
         /*/////////////////////////////////////////////////
                         PAYLOAD INITIALIZATION

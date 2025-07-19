@@ -41,9 +41,11 @@ contract ForkedHelper is BaseTests {
     address constant BASE_USDC_ADDRESS = 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913;
     address constant BASE_WETH_ADDRESS = 0x4200000000000000000000000000000000000006;
     address constant BASE_AERO_ADDRESS = 0x940181a94A35A4569E4529A3CDfB74e38FD98631;
+    address constant BASE_LINK_ADDRESS = 0x88Fb150BDc53A65fe94Dea0c9BA0a6dAf8C6e196;
     IERC20 constant BASE_USDC_MAINNET = IERC20(BASE_USDC_ADDRESS);
     IERC20 constant BASE_WETH_MAINNET = IERC20(BASE_WETH_ADDRESS);
     IERC20 constant BASE_AERO_MAINNET = IERC20(BASE_AERO_ADDRESS);
+    IERC20 constant BASE_LINK_MAINNET = IERC20(BASE_LINK_ADDRESS);
 
     address constant ARB_USDC_ADDRESS = 0xaf88d065e77c8cC2239327C5EDb3A432268e5831;
     address constant ARB_WETH_ADDRESS = 0x82aF49447D8a07e3bd95BD0d56f35241523fBab1;
@@ -90,21 +92,22 @@ contract ForkedHelper is BaseTests {
         baseMainnet = vm.createSelectFork(BASE_MAINNET_RPC_URL);
         vm.rollFork(33_042_825);
 
+        super.setUp();
+        ccipLocal = new CCIPLocalSimulatorFork();
+        swap = IStartSwapFacet(d);
+
         //Distribute eth balance
         deal(BASE_USDC_ADDRESS, user02, USDC_INITIAL_BALANCE);
         deal(BASE_USDC_ADDRESS, user03, USDC_INITIAL_BALANCE);
         deal(BASE_WETH_ADDRESS, user02, WETH_INITIAL_BALANCE);
         deal(BASE_WETH_ADDRESS, user03, WETH_INITIAL_BALANCE);
+        deal(BASE_LINK_ADDRESS, address(d), WETH_INITIAL_BALANCE);
 
         //Ensure balance
         assertEq(BASE_USDC_MAINNET.balanceOf(user02), USDC_INITIAL_BALANCE);
         assertEq(BASE_USDC_MAINNET.balanceOf(user03), USDC_INITIAL_BALANCE);
         assertEq(BASE_WETH_MAINNET.balanceOf(user02), WETH_INITIAL_BALANCE);
         assertEq(BASE_WETH_MAINNET.balanceOf(user03), WETH_INITIAL_BALANCE);
-
-        super.setUp();
-        ccipLocal = new CCIPLocalSimulatorFork();
-        swap = IStartSwapFacet(d);
 
         // Labeling
         vm.label(0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913, "USDC");

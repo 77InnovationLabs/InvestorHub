@@ -57,13 +57,11 @@ contract CrossChainSwap is ForkedHelper {
             chainSelector: ARB_CHAIN_SELECTOR,
             receiverContract: dArb,
             amountToSend: 35_000e6,
-            extraArgs: abi.encode(
-                Client._argsToBytes(
-                    Client.EVMExtraArgsV2({
-                        gasLimit: CCIP_GAS_LIMIT,
-                        allowOutOfOrderExecution: true
-                    })
-                )
+            extraArgs: Client._argsToBytes(
+                Client.EVMExtraArgsV2({
+                    gasLimit: CCIP_GAS_LIMIT,
+                    allowOutOfOrderExecution: true
+                })
             )
         });
     }

@@ -65,7 +65,7 @@ contract DataFeedsFacet {
             uint256 updatedAt,
             uint80 answeredInRound
         ) = i_feeds.latestRoundData();
-        if(i_heartbeat > block.timestamp - updatedAt) revert DataFeedsFacet_StalePrice();
+        if(i_heartbeat < block.timestamp - updatedAt) revert DataFeedsFacet_StalePrice();
         if(roundId == ZERO || answeredInRound == ZERO) revert DataFeedsFacet_InvalidRoundId();
         if(uint256(answer) == ZERO) revert DataFeedsFacet_AnswerCannotBeZero(); 
 

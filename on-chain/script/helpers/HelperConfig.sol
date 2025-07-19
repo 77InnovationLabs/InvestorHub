@@ -154,7 +154,7 @@ contract HelperConfig is Script {
                 ccipRouter: 0x141fa059441E0ca23ce184B6A78bafD2A517DdE8,
                 linkToken: 0xf97f4df75117a78c1A5a0DBb814Af92458539FB4,
                 feedsAggregator: 0x86E53CF1B870786351Da77A57575e79CB55812CB,
-                heartbeat: 3600,
+                heartbeat: 3_600,
                 functionsRouter: 0x97083E831F8F0638855e2A515c90EdCF158DF238,
                 donId: 0x66756e2d617262697472756d2d6d61696e6e65742d3100000000000000000000,
                 subscriptionId: 0 //TODO: create programmatically

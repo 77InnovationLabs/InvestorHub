@@ -111,6 +111,7 @@ contract CCIPSendFacet is ICCIPFacets {
 
         _payload.transaction.amountToSend = LibTransfers._handleProtocolFee(i_vault, i_usdc, swapResult);
         
+        IERC20(i_usdc).forceApprove(address(i_ccipRouter), _payload.transaction.amountToSend);
         _ccipSend(_payload);
     }
 
