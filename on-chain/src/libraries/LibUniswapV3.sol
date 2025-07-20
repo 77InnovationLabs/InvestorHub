@@ -2,15 +2,11 @@
 pragma solidity 0.8.26;
 
 /*/////////////////////////////
-            Imports
-/////////////////////////////*/
-import {ISwapRouter} from "@uniV3-periphery/contracts/interfaces/ISwapRouter.sol";
-import {IV3SwapRouter} from "@uni-router-v3/contracts/interfaces/IV3SwapRouter.sol";
-
-/*/////////////////////////////
             Interfaces
 /////////////////////////////*/
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {ISwapRouter} from "@uniV3-periphery/contracts/interfaces/ISwapRouter.sol";
+import {IV3SwapRouter} from "@uni-router-v3/contracts/interfaces/IV3SwapRouter.sol";
 
 /*/////////////////////////////
             Libraries
