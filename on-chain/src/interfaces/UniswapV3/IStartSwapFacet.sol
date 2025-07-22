@@ -8,11 +8,7 @@ interface IStartSwapFacet {
     /*///////////////////////////////////
                     Variables
     ///////////////////////////////////*/
-    struct DexPayload{
-        bytes path;
-        uint256 amountInForInputToken;
-        uint256 deadline;
-    }
+
 
     function startSwap(
         uint256 _totalAmountIn,

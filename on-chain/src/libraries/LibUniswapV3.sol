@@ -4,6 +4,7 @@ pragma solidity 0.8.26;
 /*/////////////////////////////
             Interfaces
 /////////////////////////////*/
+import { IStartSwapFacet } from "src/interfaces/UniswapV3/IStartSwapFacet.sol";
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {ISwapRouter} from "@uniV3-periphery/contracts/interfaces/ISwapRouter.sol";
 import {IV3SwapRouter} from "@uni-router-v3/contracts/interfaces/IV3SwapRouter.sol";
@@ -12,6 +13,7 @@ import {IV3SwapRouter} from "@uni-router-v3/contracts/interfaces/IV3SwapRouter.s
             Libraries
 /////////////////////////////*/
 import { Bytes } from "@openzeppelin/contracts/utils/Bytes.sol";
+import { LibTransfers } from "src/libraries/LibTransfers.sol";
 
 library LibUniswapV3{
 
@@ -26,39 +28,80 @@ library LibUniswapV3{
     /////////////////////////////////////////////*/
     ///@notice constant variable to store MAGIC NUMBERS
     uint8 private constant ZERO = 0;
+    ///@notice constant variable to store the maximum size of the DexPayload array
+    uint8 private constant MAX_PAYLOAD_SIZE = 10;
 
     /*///////////////////////////////////
                     Errors
     ///////////////////////////////////*/
+    ///@notice error emitted when the function is not executed in the Diamond context
+    error StartSwapFacet_CallerIsNotDiamond(address actualContext, address diamondContext);
+    ///@notice error emitted when the liquidAmount is zero
+    error StartSwapFacet_InvalidAmountToSwap(uint256 amountIn);
+    ///@notice error emitted when the first token of a swap is the address(0)
+    error StartSwapFacet_InvalidToken0(address tokenIn);
+    ///@notice error emitted when the token out is != than USDC
+    error StartSwapFacet_InvalidToken1(address tokenOut);
+    ///@notice error emitted when the payload size is greater than the maximum allowed
+    error StartSwapFacet_InvalidPayloadSize();
 
     ////////////////////////////////////////////////////////////////////////////////
                                 /// Functions ///
     ////////////////////////////////////////////////////////////////////////////////
+    /**
+        *@notice external function to handle the creation of an investment position
+        *@param _payload the data to perform swaps
+        *@param _stakePayload the data to perform the stake operation
+        *@dev this function must be able to perform swaps and stake the tokens
+        *@dev the stToken must be sent directly to user.
+        *@dev the _stakePayload must contain the final value to be deposited, the calculations
+    */
+    function startSwap(
+        address _router,
+        IERC20 _usdc,
+        ISwapRouter.ExactInputParams[] memory _dexPayload
+    ) external returns(uint256 usdcReceived_) {
+        uint256 payloadLength = _dexPayload.length;
+        if(payloadLength > MAX_PAYLOAD_SIZE) revert StartSwapFacet_InvalidPayloadSize();
+
+        // Move to Investment Facet
+        // if(_payload[payloadLength -2].tokenIn != address(i_usdc)) revert StartSwapFacet_InvalidToken0(_payload[payloadLength -2].tokenIn);
+        // if(_payload[payloadLength -2].tokenOut != _stakePayload.token0) revert StartSwapFacet_InvalidToken1(_payload[payloadLength -2].tokenOut);
+        // if(_payload[payloadLength -1].tokenIn != address(i_usdc)) revert StartSwapFacet_InvalidToken0(_payload[payloadLength -1].tokenIn);
+        // if(_payload[payloadLength -1].tokenOut != _stakePayload.token1) revert StartSwapFacet_InvalidToken1(_payload[payloadLength -1].tokenOut);
+
+
+        for(uint256 i; i <  payloadLength ; ++i) {
+            // retrieve tokens from UniV3 path input
+            (
+                address token0,
+                address token1
+            ) = LibUniswapV3._extractTokens(_dexPayload.path);
+
+            //TODO: Sanity checks
+            if(token1 != _usdc) revert StartSwapFacet_InvalidToken1(token1);
+                
+            _dexPayload.amountInForInputToken = LibTransfers._handleTokenTransfers(token0, _dexPayload.amountInForInputToken);
+            
+            _handleSwap(_router, _dexPayload);
+        }
+
+    }
+    
     function _handleSwap(
         address _router,
-        bytes memory _path,
-        address _inputToken,
-        uint256 _deadline,
-        uint256 _amountForTokenIn,
-        uint256 _amountOutMin
+        ISwapRouter.ExactInputParams memory _dexPayload
     ) internal returns(uint256 token0left_, uint256 swappedAmount_){
         // TODO: Comunicar o Front
         if(_deadline > ZERO){
             (token0left_, swappedAmount_) = _handleSwapV1(
                 _router,
-                _path,
-                _inputToken,
-                _deadline,
-                _amountForTokenIn,
-                _amountOutMin
+                _dexPayload
             );
         } else {
             (token0left_, swappedAmount_) = _handleSwapsV3(
                 _router,
-                _path,
-                _inputToken,
-                _amountForTokenIn,
-                _amountOutMin
+                _dexPayload
             );
         }
     }
@@ -74,29 +117,13 @@ library LibUniswapV3{
     */
     function _handleSwapV1(
         address _router,
-        bytes memory _path,
-        address _inputToken,
-        uint256 _deadline,
-        uint256 _amountForTokenIn,
-        uint256 _amountOutMin
-    ) private returns(uint256 token0left_, uint256 swappedAmount_){
-
-        //handle payload - forward the liquidAmount
-        ISwapRouter.ExactInputParams memory dexPayload = ISwapRouter.ExactInputParams({
-            path: _path,
-            recipient: address(this), ///@notice swaps must have the Diamond address as receiver
-            deadline: _deadline,
-            amountIn: _amountForTokenIn,
-            amountOutMinimum: _amountOutMin
-        });
+        ISwapRouter.ExactInputParams memory _dexPayload
+    ) private returns(uint256 swappedAmount_){
 
         //Safe approve _router for the _amountForTokenIn
-        IERC20(_inputToken).safeIncreaseAllowance(_router, _amountForTokenIn);
+        IERC20(_inputToken).forceApprove(_router, _amountForTokenIn);
 
-        //Swap
-        swappedAmount_ = ISwapRouter(_router).exactInput(dexPayload);
-
-        token0left_ = IERC20(_inputToken).balanceOf(address(this));
+        swappedAmount_ = ISwapRouter(_router).exactInput(_dexPayload);
     }
 
     /**
@@ -110,27 +137,12 @@ library LibUniswapV3{
     */
     function _handleSwapsV3(
         address _router,
-        bytes memory _path,
-        address _inputToken,
-        uint256 _amountForTokenIn,
-        uint256 _amountOutMin
-    ) private returns(uint256 token0left_, uint256 swappedAmount_){
-
-        //handle payload - forward the liquidAmount
-        IV3SwapRouter.ExactInputParams memory dexPayload = IV3SwapRouter.ExactInputParams({
-            path: _path,
-            recipient: address(this), ///@notice swaps must have the Diamond address as receiver
-            amountIn: _amountForTokenIn,
-            amountOutMinimum: _amountOutMin
-        });
-
+        IV3SwapRouter.ExactInputParams memory _dexPayload
+    ) private returns(uint256 swappedAmount_){
         //Safe approve _router for the _amountForTokenIn
         IERC20(_inputToken).safeIncreaseAllowance(_router, _amountForTokenIn);
-
         //Swap
-        swappedAmount_ = IV3SwapRouter(_router).exactInput(dexPayload);
-
-        token0left_ = IERC20(_inputToken).balanceOf(address(this));
+        swappedAmount_ = IV3SwapRouter(_router).exactInput(_dexPayload);
     }
 
     /*//////////////////////////////////
