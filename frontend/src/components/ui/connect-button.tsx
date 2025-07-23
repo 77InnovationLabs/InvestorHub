@@ -1,14 +1,24 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useRef, useEffect } from 'react';
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy, useWallets } from "@privy-io/react-auth";
 import Button from "../ui/button";
-import { Wallet, ShieldUser, LogOut, Mail, User, CreditCard, Copy } from "lucide-react";
+import { Wallet, ShieldUser, LogOut, Mail, User, CreditCard, Copy, Check } from "lucide-react";
+import { sepolia, baseSepolia } from 'viem/chains';
 
 export default function ConnectButton() {
     const { ready, authenticated, login, logout, user } = usePrivy();
+    const { wallets: privyWallets } = useWallets();
     const [showWalletMenu, setShowWalletMenu] = useState(false);
     const [copied, setCopied] = useState(false);
+    const [currentChainId, setCurrentChainId] = useState<string>('');
+    const [switchingChain, setSwitchingChain] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
+
+    // Supported chains configuration
+    const supportedChains = [
+        { id: sepolia.id.toString(), name: 'Sepolia', icon: '🔴' },
+        { id: baseSepolia.id.toString(), name: 'Base Sepolia', icon: '🔵' }
+    ];
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -22,6 +32,16 @@ export default function ConnectButton() {
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, [menuRef]);
+
+    // Update current chain when wallet changes
+    useEffect(() => {
+        if (privyWallets.length > 0) {
+            const wallet = privyWallets[0];
+            // Extract chain ID from eip155:11155111 format
+            const chainId = wallet.chainId.replace('eip155:', '');
+            setCurrentChainId(chainId);
+        }
+    }, [privyWallets]);
 
     if (!ready) return null;
 
@@ -39,6 +59,11 @@ export default function ConnectButton() {
         return "";
     };
 
+    const getCurrentNetworkName = () => {
+        const chain = supportedChains.find(c => c.id === currentChainId);
+        return chain ? chain.name : 'Unknown';
+    };
+
     const copyAddressToClipboard = async (address: string) => {
         try {
             await navigator.clipboard.writeText(address);
@@ -49,6 +74,23 @@ export default function ConnectButton() {
         }
     };
 
+    const switchNetwork = async (chainId: string) => {
+        if (privyWallets.length === 0) return;
+        
+        try {
+            setSwitchingChain(true);
+            const wallet = privyWallets[0];
+            await wallet.switchChain(parseInt(chainId));
+            setCurrentChainId(chainId);
+        } catch (error) {
+            console.error('Failed to switch network:', error);
+        } finally {
+            setSwitchingChain(false);
+        }
+    };
+
+
+
     return (
         <div className="relative" ref={menuRef}>
             {authenticated ? (
@@ -57,7 +99,10 @@ export default function ConnectButton() {
                     className="flex items-center gap-2 px-4 py-2 rounded-lg text-white bg-red-600 hover:bg-red-700 transition-all duration-300 shadow-md cursor-pointer" // Added cursor-pointer
                 >
                     <ShieldUser size={20} />
-                    {getUserLabel()}
+                    <div className="flex flex-col items-start">
+                        <span>{getUserLabel()}</span>
+                        <span className="text-xs opacity-75">{getCurrentNetworkName()}</span>
+                    </div>
                 </Button>
             ) : (
                 <Button
@@ -100,6 +145,37 @@ export default function ConnectButton() {
                             </div>
                         )}
                     </div>
+
+                    {/* Network Selection Section */}
+                    <div className="px-4 py-2 border-b border-gray-100">
+                        <p className="text-sm font-semibold text-gray-800 mb-2">Network</p>
+                        <div className="space-y-1">
+                            {supportedChains.map((chain) => (
+                                <button
+                                    key={chain.id}
+                                    onClick={() => switchNetwork(chain.id)}
+                                    disabled={switchingChain}
+                                    className={`w-full text-left px-2 py-1.5 text-sm rounded-md flex items-center justify-between transition-colors duration-200 ${
+                                        currentChainId === chain.id
+                                            ? 'bg-sky-50 text-sky-700 border border-sky-200'
+                                            : 'text-gray-600 hover:bg-gray-50'
+                                    } ${switchingChain ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                                >
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-base">{chain.icon}</span>
+                                        <span>{chain.name}</span>
+                                    </div>
+                                    {currentChainId === chain.id && (
+                                        <Check size={14} className="text-sky-600" />
+                                    )}
+                                </button>
+                            ))}
+                        </div>
+                        {switchingChain && (
+                            <p className="text-xs text-gray-500 mt-1">Switching network...</p>
+                        )}
+                    </div>
+
                     <button
                         onClick={logout}
                         className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 cursor-pointer" // Added cursor-pointer

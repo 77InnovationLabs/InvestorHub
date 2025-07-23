@@ -19,7 +19,7 @@ export async function getUSDPriceQuote(wallet: ConnectedWallet, tokenIn: Partial
   const usdToken = NETWORKS_CONFIGS[wallet.chainId].usdToken;
   const amountIn = fromReadableAmount(
     AMOUNT_1,
-    tokenIn.decimals ?? 18
+    Number(tokenIn.decimals) ?? 18
   ).toString();
 
   console.log('getUSDPriceQuote: quoterContract', quoterContract);
@@ -28,7 +28,7 @@ export async function getUSDPriceQuote(wallet: ConnectedWallet, tokenIn: Partial
   console.log('getUSDPriceQuote: fee', fee);
   console.log('getUSDPriceQuote: amountIn', fromReadableAmount(
     AMOUNT_1,
-    tokenIn.decimals ?? 18
+    Number(tokenIn.decimals) ?? 18
   ).toString());
 
   const path = ethers.solidityPacked(
@@ -42,7 +42,7 @@ export async function getUSDPriceQuote(wallet: ConnectedWallet, tokenIn: Partial
   );
 
   console.log('getUSDPriceQuote: quotedAmountOut', quotedAmountOut);
-  return toReadableAmount(quotedAmountOut[0], usdToken.decimals ?? 18);
+  return toReadableAmount(quotedAmountOut[0], Number(usdToken.decimals) ?? 18);
 }
 
 export async function getTokenPriceQuote(wallet: ConnectedWallet, tokenIn: PartialToken, tokenOut: Token, fee: number, amountIn: number): Promise<any> {
@@ -56,7 +56,7 @@ export async function getTokenPriceQuote(wallet: ConnectedWallet, tokenIn: Parti
 
   const amountInFormatted = fromReadableAmount(
     amountIn,
-    tokenIn.decimals ?? 18
+    Number(tokenIn.decimals) ?? 18
   ).toString();
 
   console.log('getTokenPriceQuote: quoterContract', quoterContract);
@@ -81,7 +81,7 @@ export async function getTokenPriceQuote(wallet: ConnectedWallet, tokenIn: Parti
   const amountOut = quotedAmountOut[0];
   console.log('getTokenPriceQuote:amountOut', amountOut);
 
-  return {amountOut: toReadableAmount(amountOut, tokenOut.decimals ?? 18), path: path};
+  return {amountOut: toReadableAmount(amountOut, Number(tokenOut.decimals) ?? 18), path: path};
 }
 
 export async function getBestUSDPriceQuote(wallet: ConnectedWallet, tokenIn: PartialToken): Promise<{ quote: any, fee: number }> {
@@ -100,7 +100,7 @@ export async function getBestUSDPriceQuote(wallet: ConnectedWallet, tokenIn: Par
   const usdToken = NETWORKS_CONFIGS[wallet.chainId].usdToken;
   const amountIn = fromReadableAmount(
     AMOUNT_1,
-    tokenIn.decimals ?? 18
+    Number(tokenIn.decimals) ?? 18
   ).toString();
 
   console.log('getBestUSDPriceQuote: trying all fee tiers for token', tokenIn.symbol);
@@ -123,7 +123,7 @@ export async function getBestUSDPriceQuote(wallet: ConnectedWallet, tokenIn: Par
         amountIn
       );
 
-      const readableQuote = toReadableAmount(quotedAmountOut[0], usdToken.decimals ?? 18);
+      const readableQuote = toReadableAmount(quotedAmountOut[0], Number(usdToken.decimals) ?? 18);
       console.log(`Fee ${fee}: quote = ${readableQuote}`);
 
       if (!bestQuote || Number(readableQuote) > Number(bestQuote)) {
@@ -155,7 +155,7 @@ export async function getBestTokenPriceQuote(wallet: ConnectedWallet, tokenIn: T
 
   const amountIn = fromReadableAmount(
     AMOUNT_1,
-    tokenIn.decimals ?? 18
+    Number(tokenIn.decimals) ?? 18
   ).toString();
 
   console.log('getBestTokenPriceQuote: trying all fee tiers', tokenIn.symbol, '→', tokenOut.symbol);
@@ -178,7 +178,7 @@ export async function getBestTokenPriceQuote(wallet: ConnectedWallet, tokenIn: T
         amountIn
       );
 
-      const readableQuote = toReadableAmount(quotedAmountOut[0], tokenOut.decimals ?? 18);
+      const readableQuote = toReadableAmount(quotedAmountOut[0], Number(tokenOut.decimals) ?? 18);
       console.log(`Fee ${fee}: quote = ${readableQuote}`);
 
       if (!bestQuote || Number(readableQuote) > Number(bestQuote)) {

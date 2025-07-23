@@ -33,7 +33,7 @@ const NewPositionV2: React.FC = () => {
     const [loadingTokenInfo, setLoadingTokenInfo] = useState(false);
     const { wallets: privyWallets, ready } = useWallets();
 
-    const fetchPoolById = async () => {
+    const fetchPoolById = async (): Promise<PoolData> => {
         try {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/pools/${id}`, {
                 method: 'GET',
@@ -131,7 +131,7 @@ const NewPositionV2: React.FC = () => {
                 // Convert pool token to match Token interface
                 const otherTokenFormatted: Token = {
                     ...otherToken,
-                    decimals: Number(otherToken.decimals)
+                    decimals: otherToken.decimals
                 };
                 
                 // Get quote for typed token as input and other token as output
@@ -147,10 +147,10 @@ const NewPositionV2: React.FC = () => {
                 const amountOut = quote.amountOut;
 
                 const startSwapParams: StartSwapParams = {
-                    totalAmountIn: fromReadableAmount(Number(investmentAmount), customTokenDetails.decimals).toString(),
+                    totalAmountIn: fromReadableAmount(Number(investmentAmount), Number(customTokenDetails.decimals)).toString(),
                     payload: {
                         path: path,
-                        amountInForInputToken: fromReadableAmount(Number(halfInvestment), customTokenDetails.decimals).toString(),
+                        amountInForInputToken: fromReadableAmount(Number(halfInvestment), Number(customTokenDetails.decimals)).toString(),
                         deadline: "0",
                     },
                     stakePayload: {
@@ -170,7 +170,7 @@ const NewPositionV2: React.FC = () => {
 
                 await checkAndExecuteApprovalAndWait(
                     customTokenDetails.address,
-                    fromReadableAmount(Number(investmentAmount), customTokenDetails.decimals).toString(),
+                    fromReadableAmount(Number(investmentAmount), Number(customTokenDetails.decimals)).toString(),
                     privyWallets[0]
                 );
 
@@ -182,11 +182,11 @@ const NewPositionV2: React.FC = () => {
                 // Convert pool tokens to match Token interface
                 const token0Formatted: Token = {
                     ...poolData.token0,
-                    decimals: Number(poolData.token0.decimals)
+                    decimals: poolData.token0.decimals
                 };
                 const token1Formatted: Token = {
                     ...poolData.token1,
-                    decimals: Number(poolData.token1.decimals)
+                    decimals: poolData.token1.decimals
                 };
                 
                 // Get quote for typed token as input and token0 as output
@@ -245,8 +245,8 @@ const NewPositionV2: React.FC = () => {
                     const tickValuesData = await calculateTickValues(provider, data.address);
                     setTickValues(tickValuesData);
                     console.log('Tick values:', tickValuesData);
-                    const token0PriceData = await getUSDPrice(privyWallets[0], data.token0, data.feeTier);
-                    const token1PriceData = await getUSDPrice(privyWallets[0], data.token1, data.feeTier);
+                    const token0PriceData = await getUSDPrice(privyWallets[0], data.token0, Number(data.feeTier));
+                    const token1PriceData = await getUSDPrice(privyWallets[0], data.token1, Number(data.feeTier));
                     setToken0Price(token0PriceData);
                     setToken1Price(token1PriceData);
                     console.log('Token0 price:', token0PriceData);

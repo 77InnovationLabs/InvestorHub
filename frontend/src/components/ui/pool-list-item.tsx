@@ -2,34 +2,13 @@ import React from 'react';
 import { ArrowRight } from 'lucide-react';
 import Button from './button';
 import { Link } from 'react-router-dom';
-
-interface Network {
-    id: string;
-    name: string;
-    graphqlUrl: string;
-}
-
-interface Token {
-    id: string;
-    symbol: string;
-    name: string;
-    address: string;
-    network: Network;
-}
-
-interface PoolDayData {
-    date: number;
-    feesUSD: string;
-    volumeUSD: string;
-    tvlUSD: string;
-    apr24h: string;
-}
+import { TokenInfo, PoolDayData } from '../../interfaces/pooldata';
 
 interface PoolListItemProps {
     _id: string;
     feeTier: string;
-    token0: Token;
-    token1: Token;
+    token0: TokenInfo;
+    token1: TokenInfo;
     poolDayData: PoolDayData[];
 }
 
@@ -41,7 +20,7 @@ const PoolListItem: React.FC<PoolListItemProps> = ({
     poolDayData,
 }) => {
     const latestData = poolDayData && poolDayData.length > 0
-        ? poolDayData.sort((a, b) => b.date - a.date)[0]
+        ? poolDayData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0]
         : { apr24h: '0', tvlUSD: '0', volumeUSD: '0' };
     const apr = latestData.apr24h ? `${parseFloat(latestData.apr24h).toFixed(2)}%` : 'N/A';
     const tvl = latestData.tvlUSD

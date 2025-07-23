@@ -6,12 +6,12 @@ export interface Token {
     name: string;
     address: string;
     network: Network;
-    decimals: number;
+    decimals: string;
     whitelist?: boolean;
 }
 
 export interface PartialToken {
     symbol: string;
     address: string;
-    decimals: number;
+    decimals: string;
 }

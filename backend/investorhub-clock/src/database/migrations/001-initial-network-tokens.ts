@@ -54,7 +54,7 @@ export async function up(
     name: 'Base Sepolia',
     chainId: 84532,
     rpcUrl: 'https://sepolia.base.org',
-    graphqlUrl: 'https://gateway.thegraph.com/api/subgraphs/id/ByS2RA4Qfpwrtu9vJC5VQqBN4jQxbM6hugm5VNNspstj',
+    graphqlUrl: 'https://gateway.thegraph.com/api/subgraphs/id/4xPAdAuU9HfbQhNdGCfZYBw45Ey6KB71R3dc4qCD5XhQ',
     currency: 'ETH',
     positionManagerAddress: '0x27F971cb582BF9E50F397e4d29a5C7A34f11faA2',
     factoryAddress: '0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24',
@@ -86,10 +86,10 @@ export async function up(
     },
     baseSepolia: {
       weth: '0x4200000000000000000000000000000000000006',
-      usdt: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
-      usdc: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
-      wbtc: '0xEdd151d22c219a7c13321d4F66A4b779B982dE5f',
-      link: '0xE4aB69C077896252FAFBD49EFD26B5D171A32410',
+      usdt: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
+      usdc: '0x036cbd53842c5426634e7929541ec2318f3dcf7e',
+      wbtc: '0xedd151d22c219a7c13321d4f66a4b779b982de5f',
+      link: '0xe4ab69c077896252fafbd49efd26b5d171a32410',
     },
   };
 

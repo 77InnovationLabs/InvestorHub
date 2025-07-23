@@ -13,6 +13,7 @@ import { fromReadableAmount } from '../utils/convertions';
 import { ArrowLeft, ChevronDown, CircleDollarSign } from 'lucide-react';
 import TokenSelectionModal from '../components/ui/token-selection-modal';
 import { startFullSwapAndWait } from '../utils/aggregator/investFullSwap';
+import { NETWORKS_CONFIGS } from '../utils/constants';
 
 const NewPositionV3: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -20,6 +21,7 @@ const NewPositionV3: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [tickValues, setTickValues] = useState<any>(null);
+    const [isTheSameNetwork, setIsTheSameNetwork] = useState(false);
     const [token0Price, setToken0Price] = useState<string | null>(null);
     const [token1Price, setToken1Price] = useState<string | null>(null);
     const [customTokenDetails, setCustomTokenDetails] = useState<PartialToken | null>(null);
@@ -56,7 +58,7 @@ const NewPositionV3: React.FC = () => {
         }
     };
 
-    const fetchPoolById = async () => {
+    const fetchPoolById = async (): Promise<PoolData> => {
         try {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/pools/${id}`, {
                 method: 'GET',
@@ -156,7 +158,7 @@ const NewPositionV3: React.FC = () => {
                 // Convert pool token to match Token interface
                 const otherTokenFormatted: Token = {
                     ...otherToken,
-                    decimals: Number(otherToken.decimals),
+                    decimals: otherToken.decimals,
                 };
 
                 // Get quote for typed token as input and other token as output
@@ -175,10 +177,10 @@ const NewPositionV3: React.FC = () => {
                 quotes.otherTokenQuote = amountOut;
 
                 const startSwapParams: StartSwapParams = {
-                    totalAmountIn: fromReadableAmount(Number(investmentAmount), customTokenDetails.decimals).toString(),
+                    totalAmountIn: fromReadableAmount(Number(investmentAmount), Number(customTokenDetails.decimals)).toString(),
                     payload: {
                         path: path,
-                        amountInForInputToken: fromReadableAmount(Number(halfInvestment), customTokenDetails.decimals).toString(),
+                        amountInForInputToken: fromReadableAmount(Number(halfInvestment), Number(customTokenDetails.decimals)).toString(),
                         deadline: "0",
                     },
                     stakePayload: {
@@ -202,7 +204,7 @@ const NewPositionV3: React.FC = () => {
 
                 await checkAndExecuteApprovalAndWait(
                     customTokenDetails.address,
-                    fromReadableAmount(Number(investmentAmount), customTokenDetails.decimals).toString(),
+                    fromReadableAmount(Number(investmentAmount), Number(customTokenDetails.decimals)).toString(),
                     privyWallets[0]
                 );
 
@@ -212,11 +214,11 @@ const NewPositionV3: React.FC = () => {
                 // If typed token is not one of the pool tokens
                 const token0Formatted: Token = {
                     ...poolData.token0,
-                    decimals: Number(poolData.token0.decimals),
+                    decimals: poolData.token0.decimals,
                 };
                 const token1Formatted: Token = {
                     ...poolData.token1,
-                    decimals: Number(poolData.token1.decimals),
+                    decimals: poolData.token1.decimals,
                 };
 
                 // Get quotes for both tokens
@@ -243,20 +245,20 @@ const NewPositionV3: React.FC = () => {
 
                 await checkAndExecuteApprovalAndWait(
                     customTokenDetails.address,
-                    fromReadableAmount(Number(investmentAmount), customTokenDetails.decimals).toString(),
+                    fromReadableAmount(Number(investmentAmount), Number(customTokenDetails.decimals)).toString(),
                     privyWallets[0]
                 );
 
                 const fullSwapParams: FullSwapParams = {
                     inputToken: customTokenDetails.address,
-                    totalAmountIn: fromReadableAmount(Number(investmentAmount), customTokenDetails.decimals).toString(),
+                    totalAmountIn: fromReadableAmount(Number(investmentAmount), Number(customTokenDetails.decimals)).toString(),
                     payload: [{ 
                         path: quoteToken0.path,
-                        amountInForInputToken: fromReadableAmount(Number(halfInvestment), customTokenDetails.decimals).toString(),
+                        amountInForInputToken: fromReadableAmount(Number(halfInvestment), Number(customTokenDetails.decimals)).toString(),
                         deadline: "0",
                     }, {
                         path: quoteToken1.path,
-                        amountInForInputToken: fromReadableAmount(Number(halfInvestment), customTokenDetails.decimals).toString(),
+                        amountInForInputToken: fromReadableAmount(Number(halfInvestment), Number(customTokenDetails.decimals)).toString(),
                         deadline: "0",
                     }],
                     stakePayload: {
@@ -362,6 +364,17 @@ const NewPositionV3: React.FC = () => {
         }
     };
 
+    const checkTheSameNetwork = async (name: string) => {
+        if (privyWallets.length > 0) {
+            setIsTheSameNetwork(name === NETWORKS_CONFIGS[privyWallets[0].chainId].name);
+            return name === NETWORKS_CONFIGS[privyWallets[0].chainId].name;
+        } 
+        
+        setIsTheSameNetwork(false);
+        return false;
+
+    }
+
     useEffect(() => {
         const loadPoolData = async () => {
             setLoading(true);
@@ -375,7 +388,9 @@ const NewPositionV3: React.FC = () => {
                 console.log('Ready:', ready);
                 if (ready) {
                     const provider = await privyWallets[0].getEthereumProvider();
-                    const tickValuesData = await calculateTickValues(provider, data.address);
+                    const isTheSameNetworkParam = await checkTheSameNetwork(data.token0.network.name); // TODO: Better way to check if the network is the same
+                    
+                    const tickValuesData = await calculateTickValues(provider, data.address, isTheSameNetworkParam);
                     setTickValues(tickValuesData);
                     console.log('Tick values:', tickValuesData);
                     const token0PriceData = await getUSDPrice(privyWallets[0], data.token0);
@@ -386,6 +401,7 @@ const NewPositionV3: React.FC = () => {
                     setToken1Price(token1PriceData.quote);
                     console.log('Token0 price:', token0PriceData);
                     console.log('Token1 price:', token1PriceData);
+                    console.log('Is the same network:', isTheSameNetwork);
                 }
             } catch (err) {
                 setError(err instanceof Error ? err.message : 'Failed to fetch pool data');

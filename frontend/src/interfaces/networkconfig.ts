@@ -4,4 +4,5 @@ export interface NetworkConfig {
         decimals: number;
     };
     quoterContract: string;
+    name: string;
 }

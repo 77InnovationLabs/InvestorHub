@@ -18,7 +18,7 @@ RUN apt-get update && \
 COPY package.json pnpm-lock.yaml ./
 
 # Add build argument to bust cache
-ARG CACHE_BUST=1
+ARG CACHE_BUST=3
 
 # Install dependencies
 RUN pnpm install

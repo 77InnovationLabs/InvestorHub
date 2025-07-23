@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ethers } from 'ethers';
+import { ethers } from 'ethersV6';
 import { UniswapMathService } from './uniswap-math.service';
 import { PositionHoldingsDto } from './dto/position-holdings.dto';
 import { UncollectedFeesDto } from './dto/uncollected-fees.dto';

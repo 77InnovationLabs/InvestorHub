@@ -3,6 +3,7 @@ import { PoolModule } from './pools/pool.module';
 import { SubgraphModule } from './subgraph/subgraph.module';
 import { TokenModule } from './token/token.module';
 import { UniswapCalculatorModule } from './uniswap-calculator/uniswap-calculator.module';
+import { QuoteModule } from './cross-chain/quote/quote.module';
 
 @Module({
   imports: [
@@ -10,12 +11,14 @@ import { UniswapCalculatorModule } from './uniswap-calculator/uniswap-calculator
     TokenModule,
     SubgraphModule,
     UniswapCalculatorModule,
+    QuoteModule,
   ],
   exports: [
     PoolModule,
     TokenModule,
     SubgraphModule,
     UniswapCalculatorModule,
+    QuoteModule,
   ]
 })
 export class ApisModule {}

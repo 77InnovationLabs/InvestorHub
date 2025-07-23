@@ -1,5 +1,5 @@
 export interface PoolDayData {
-    date: number;
+    date: string;
     feesUSD: string;
     volumeUSD: string;
     tvlUSD: string;

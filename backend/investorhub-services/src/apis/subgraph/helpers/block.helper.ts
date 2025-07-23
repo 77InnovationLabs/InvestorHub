@@ -1,4 +1,4 @@
-import { ethers } from 'ethers';
+import { ethers } from 'ethersV6';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 

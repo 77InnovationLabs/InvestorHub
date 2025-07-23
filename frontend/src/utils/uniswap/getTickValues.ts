@@ -29,8 +29,9 @@ export function isValidTick(tick: number, tickSpacing: number): boolean {
     return tick % tickSpacing === 0;
 }
 
-export async function calculateTickValues(provider: EIP1193Provider, poolAddress: string) {
+export async function calculateTickValues(provider: EIP1193Provider, poolAddress: string, isTheSameNetwork: boolean) {
     try {
+        console.log('Is the same network:', isTheSameNetwork);
         const ethersProvider = new ethers.BrowserProvider(provider);
         const poolContract = new ethers.Contract(poolAddress, IUniswapV3PoolABI, ethersProvider);
         const tickSpacing = await poolContract.tickSpacing();
