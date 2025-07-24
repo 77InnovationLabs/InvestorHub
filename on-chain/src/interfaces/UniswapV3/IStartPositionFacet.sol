@@ -1,11 +1,13 @@
 ///SPDX-License-Identifier: MIT
 pragma solidity 0.8.26;
 
+/*/////////////////////////////
+            Interfaces
+/////////////////////////////*/
+import { ISwapRouter } from "@uniV3-periphery/contracts/interfaces/ISwapRouter.sol";
+import { IV3SwapRouter } from "@uni-router-v3/contracts/interfaces/IV3SwapRouter.sol";
 import { INonFungiblePositionManager } from "src/interfaces/UniswapV3/INonFungiblePositionManager.sol";
-interface IStartPositionFacet is INonFungiblePositionManager {
-
-    function startPosition(INonFungiblePositionManager.MintParams memory _params, bool _afterSwap, bool _isCrossChainTx) external;
-    function collectAllFees(INonFungiblePositionManager.CollectParams memory _params) external;
-    function decreaseLiquidityCurrentRange(INonFungiblePositionManager.DecreaseLiquidityParams memory _decreaseParams, INonFungiblePositionManager.CollectParams memory _collectParams) external returns(uint256 amount0_, uint256 amount1_);
-    function increaseLiquidityCurrentRange(address _token0, address _token1, INonFungiblePositionManager.IncreaseLiquidityParams memory _params) external returns(uint128 liquidity_, uint256 amount0_, uint256 amount1_);
+interface IStartPositionFacet {
+    function startPosition(INonFungiblePositionManager.MintParams memory _params, ISwapRouter.ExactInputParams[] memory _dexPayload) external;
+    function startPosition(INonFungiblePositionManager.MintParams memory _params, IV3SwapRouter.ExactInputParams[] memory _dexPayload) external;
 }

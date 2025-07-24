@@ -24,6 +24,7 @@ contract HelperConfig is Script {
 
     struct DexSpecifications{
         address routerUniV3;
+        uint8 uniRouterVersion;
     }
 
     struct StakingSpecifications{
@@ -111,7 +112,8 @@ contract HelperConfig is Script {
             initializer: address(0),
             usdc: 	0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913,
             dex: DexSpecifications({
-                routerUniV3: 0x2626664c2603336E57B271c5C0b26F421741e481
+                routerUniV3: 0x2626664c2603336E57B271c5C0b26F421741e481,
+                uniRouterVersion: 3
             }),
             stake: StakingSpecifications({
                 aavePool: address(0),
@@ -144,7 +146,8 @@ contract HelperConfig is Script {
             initializer: address(0),
             usdc: 0xaf88d065e77c8cC2239327C5EDb3A432268e5831,
             dex: DexSpecifications({
-                routerUniV3: 0xE592427A0AEce92De3Edee1F18E0157C05861564
+                routerUniV3: 0xE592427A0AEce92De3Edee1F18E0157C05861564,
+                uniRouterVersion: 1
             }),
             stake: StakingSpecifications({
                 aavePool: address(0),
@@ -180,7 +183,8 @@ contract HelperConfig is Script {
             initializer: address(0),
             usdc: 0x5425890298aed601595a70AB815c96711a31Bc65,
             dex: DexSpecifications({
-                routerUniV3: 0xE592427A0AEce92De3Edee1F18E0157C05861564
+                routerUniV3: 0xE592427A0AEce92De3Edee1F18E0157C05861564,
+                uniRouterVersion: 3
             }),
             stake: StakingSpecifications({
                 aavePool: address(0),
@@ -212,7 +216,8 @@ contract HelperConfig is Script {
             initializer: 0xDF407457648A2aa756346461C13Db181325b6bd7,
             usdc: 0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238,
             dex: DexSpecifications({
-                routerUniV3: 0x3bFA4769FB09eefC5a80d6E87c3B9C650f7Ae48E
+                routerUniV3: 0x3bFA4769FB09eefC5a80d6E87c3B9C650f7Ae48E,
+                uniRouterVersion: 3
             }),
             stake: StakingSpecifications({
                 aavePool: address(0),
@@ -244,7 +249,8 @@ contract HelperConfig is Script {
             initializer: 0xA501e51E5902879F28b5Bb6F74B701E7FD997625,
             usdc: 0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238,
             dex: DexSpecifications({
-                routerUniV3: 0x3bFA4769FB09eefC5a80d6E87c3B9C650f7Ae48E
+                routerUniV3: 0x3bFA4769FB09eefC5a80d6E87c3B9C650f7Ae48E,
+                uniRouterVersion: 3
             }),
             stake: StakingSpecifications({
                 aavePool: address(0),
@@ -287,7 +293,8 @@ contract HelperConfig is Script {
             initializer: address(0),
             usdc: address(0),
             dex: DexSpecifications({
-                routerUniV3: address(0)
+                routerUniV3: address(0),
+                uniRouterVersion: 1
             }),
             stake: StakingSpecifications({
                 aavePool: address(0),

@@ -12,12 +12,9 @@ import { DiamondCutFacet } from "src/diamond/DiamondCutFacet.sol";
 import { DiamondInitializer } from "src/upgradeInitializers/DiamondInitializer.sol";
 import { OwnershipFacet } from "src/diamond/OwnershipFacet.sol";
 
-//Protocol Swap Facets
-import { StartSwapFacet } from "src/facets/dex/UniswapV3/StartSwapFacet.sol";
-import { StartFullSwapFacet } from "src/facets/dex/UniswapV3/StartFullSwapFacet.sol";
-
 //Protocol Invest Facets
-import { StartUniswapV3PositionFacet } from "src/facets/stake/UniswapV3/StartUniswapV3PositionFacet.sol";
+import { StartPositionFacetR1 } from "src/facets/stake/UniswapV3/StartPositionFacetR1.sol";
+import { StartPositionFacetR3 } from "src/facets/stake/UniswapV3/StartPositionFacetR3.sol";
 import { CollectFeesFacet } from "src/facets/stake/UniswapV3/CollectFeesFacet.sol";
 import { DecreaseLiquidityFacet } from "src/facets/stake/UniswapV3/DecreaseLiquidityFacet.sol";
 import { IncreaseLiquidityFacet } from "src/facets/stake/UniswapV3/IncreaseLiquidityFacet.sol";
@@ -39,12 +36,6 @@ contract DeployInitialStructureScript{
 
         address ownership = _addOwnershipFacetToDiamond(_config.diamond);
         console.log("8.2 Business Logic Faucet __Ownership__ Deployed At The Following Address:", address(ownership));
-
-        address swapFacet = _addSwapFacet(_config);
-        console.log("8.3 Business Logic Faucet __Swap__ Deployed At The Following Address:", address(swapFacet));
-
-        address fullSwapFacet = _addFullSwapFacet(_config);
-        console.log("8.4 Business Logic Faucet __FullSwap__ Deployed At The Following Address:", address(fullSwapFacet));
 
         address startPosition = _addStartPositionFacet(_config);
         console.log("8.5 Business Logic Faucet __StartPosition__ Deployed At The Following Address:", address(startPosition));
@@ -134,78 +125,6 @@ contract DeployInitialStructureScript{
         facet_ = address(ownership);
     }
 
-
-    /*////////////////////////////////////////////////////////////////////////
-    
-                                    SWAP FACETS
-    
-    ////////////////////////////////////////////////////////////////////////*/
-
-    /**
-        @notice Uniswap Facet to perform partial swaps
-    */
-    function _addSwapFacet(HelperConfig.NetworkConfig memory config) internal returns(address facet_){
-        
-        StartSwapFacet facet = new StartSwapFacet(
-            config.diamond,
-            config.dex.routerUniV3
-        );
-
-        bytes4[] memory selectors = new bytes4[](1);
-        ///@notice update accordingly with the facet been deployed
-        selectors[0] = StartSwapFacet.startSwap.selector;
-
-        ///@notice update accordingly with the facet been deployed
-        IDiamondCut.FacetCut memory facetCut = IDiamondCut.FacetCut({
-            facetAddress: address(facet),
-            action: IDiamondCut.FacetCutAction.Add,
-            functionSelectors: selectors
-        });
-
-        IDiamondCut.FacetCut[] memory cuts = new IDiamondCut.FacetCut[](1);        
-        cuts[0] = facetCut;
-
-        DiamondCutFacet(config.diamond).diamondCut(
-            cuts,
-            address(0), ///@notice update it if the facet needs initialization
-            "" ///@notice update it if the facet needs initialization
-        );
-
-        facet_ = address(facet);
-    }
-
-    /**
-        @notice Uniswap Facet to perform complete swaps
-    */
-    function _addFullSwapFacet(HelperConfig.NetworkConfig memory config) internal returns(address facet_){
-        StartFullSwapFacet facet = new StartFullSwapFacet(
-            config.diamond,
-            config.dex.routerUniV3
-        );
-        
-        bytes4[] memory selectors = new bytes4[](1);
-        ///@notice update accordingly with the facet been deployed
-        selectors[0] = StartFullSwapFacet.startSwap.selector;
-
-        ///@notice update accordingly with the facet been deployed
-        IDiamondCut.FacetCut memory facetCut = IDiamondCut.FacetCut({
-            facetAddress: address(facet),
-            action: IDiamondCut.FacetCutAction.Add,
-            functionSelectors: selectors
-        });
-
-        IDiamondCut.FacetCut[] memory cuts = new IDiamondCut.FacetCut[](1);        
-        cuts[0] = facetCut;
-
-        DiamondCutFacet(config.diamond).diamondCut(
-            cuts,
-            address(0), ///@notice update it if the facet needs initialization
-            "" ///@notice update it if the facet needs initialization
-        );
-
-        facet_ = address(facet);
-    }
-
     /*////////////////////////////////////////////////////////////////////////
     
                                 INVESTMENT FACETS
@@ -216,19 +135,32 @@ contract DeployInitialStructureScript{
         @notice Function to deploy the facet to enable users to start a position on Uniswap
     */
     function _addStartPositionFacet(HelperConfig.NetworkConfig memory config) internal returns(address facet_){
-        StartUniswapV3PositionFacet facet = new StartUniswapV3PositionFacet(
-            config.diamond,
-            config.stake.uniswapV3PositionManager,
-            config.multisig
-        );
-
         bytes4[] memory selectors = new bytes4[](1);
-        ///@notice update accordingly with the action being performed
-        selectors[0] = StartUniswapV3PositionFacet.startPosition.selector;
+
+        if(config.uniRouterVersion == 1) {
+            facet_ = address(new StartPositionFacetR1(
+                config.diamond,
+                config.stake.uniswapV3PositionManager,
+                config.stake.uniswapV3Router,
+                config.vault
+            ));
+
+            selectors[0] = StartPositionFacetR1.startPosition.selector;
+        } else {
+            facet_ = address(new StartPositionFacetR3(
+                config.diamond,
+                config.stake.uniswapV3PositionManager,
+                config.stake.uniswapV3Router,
+                config.vault
+            ));
+
+            selectors[0] = StartPositionFacetR3.startPosition.selector;
+        }
+
 
         ///@notice update accordingly with the action to be performed
         IDiamondCut.FacetCut memory facetCut = IDiamondCut.FacetCut({
-            facetAddress: address(facet),
+            facetAddress: facet_,
             action: IDiamondCut.FacetCutAction.Add,
             functionSelectors: selectors
         });
@@ -241,8 +173,6 @@ contract DeployInitialStructureScript{
             address(0), ///@notice update it if the facet needs initialization
             "" ///@notice update it if the facet needs initialization
         );
-
-        facet_ = address(facet);
     }
 
     /**

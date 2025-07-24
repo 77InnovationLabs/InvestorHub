@@ -170,11 +170,7 @@ contract CCIPSendFacet is ICCIPFacets {
 
         (inputTokenDust_, swapResult_) = LibUniswapV3._handleSwap(
             i_uniRouter,
-            _uniswapV3Payload.path,
-            _uniswapV3Payload.inputToken,
-            _uniswapV3Payload.deadline,
-            _uniswapV3Payload.totalAmountIn,
-            _uniswapV3Payload.minAmountOut
+            _uniswapV3Payload
         );
     }
 

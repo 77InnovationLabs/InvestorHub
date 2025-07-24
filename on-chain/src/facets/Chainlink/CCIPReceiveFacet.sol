@@ -126,11 +126,7 @@ contract CCIPReceiveFacet is CCIPReceiver {
         if(ccPayload.swaps[0].path.length > ZERO){
             (uint256 token0Dust, uint256 amountReceived) = LibUniswapV3._handleSwap(
                 i_uniRouter, 
-                ccPayload.swaps[0].path, 
-                ccPayload.swaps[0].inputToken,
-                ccPayload.swaps[0].deadline,
-                ccPayload.swaps[0].totalAmountIn,
-                ccPayload.swaps[0].minAmountOut
+                ccPayload[0]
             );
 
             if(token0Dust > ZERO) LibTransfers._handleRefunds(ccPayload.investment.recipient, ccPayload.swaps[0].inputToken, token0Dust);
@@ -138,11 +134,7 @@ contract CCIPReceiveFacet is CCIPReceiver {
         if(ccPayload.swaps[1].path.length > ZERO){
             (uint256 token0Dust, uint256 amountReceived) = LibUniswapV3._handleSwap(
                 i_uniRouter, 
-                ccPayload.swaps[1].path, 
-                ccPayload.swaps[1].inputToken,
-                ccPayload.swaps[1].deadline,
-                ccPayload.swaps[1].totalAmountIn,
-                ccPayload.swaps[1].minAmountOut
+                ccPayload[1]
             );
 
             if(token0Dust > ZERO) LibTransfers._handleRefunds(ccPayload.investment.recipient, ccPayload.swaps[1].inputToken, token0Dust);
