@@ -19,7 +19,7 @@ import { ICCIPFacets } from "src/interfaces/Chainlink/ICCIPFacets.sol";
 import { SafeERC20 }  from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import { Client } from "@chainlink/contracts/src/v0.8/ccip/libraries/Client.sol";
 import { LibTransfers } from "src/libraries/LibTransfers.sol";
-import { LibUniswapV3 } from "src/libraries/LibUniswapV3.sol";
+import { LibUniswapSwaps } from "src/libraries/LibUniswapSwaps.sol";
 
 contract CCIPSendFacet is ICCIPFacets {
 
@@ -43,22 +43,6 @@ contract CCIPSendFacet is ICCIPFacets {
     IERC20 immutable i_link;
     ///@notice immutable variable to store the uniswap router address
     address immutable i_uniRouter;
-
-    /*/////////////////////////////////////////////
-                        Events
-    /////////////////////////////////////////////*/
-    ///@notice event emitted when a CCIP transaction is successfully sent
-    event CCIPSendFacet_MessageSent(bytes32 txId, uint64 destinationChainSelector, address sender, uint256 fees);
-
-    /*/////////////////////////////////////////////
-                        Error
-    /////////////////////////////////////////////*/
-    ///@notice error emitted when the function is not executed in the Diamond context
-    error CCIPSendFacet_CallerIsNotDiamond(address actualContext, address diamondContext);
-    ///@notice error emitted when the tokenOut of a local swap is not USDC
-    error CCIPSendFacet_InvalidLocalSwapInput();
-    ///@notice error emitted when the link balance is not enough
-    error CCIPSendFacet_NotEnoughBalance(uint256 fees, uint256 linkBalance);
 
     /*/////////////////////////////////////////////
                         Functions
@@ -163,15 +147,11 @@ contract CCIPSendFacet is ICCIPFacets {
     function _verifySwapPayloadAndExecuteSwap(
         SwapPayload memory _uniswapV3Payload
     ) private returns(uint256 inputTokenDust_, uint256 swapResult_){
-        (address token0, address token1) = LibUniswapV3._extractTokens(_uniswapV3Payload.path);
-        
-        if(token0 != _uniswapV3Payload.inputToken) revert CCIPSendFacet_InvalidLocalSwapInput();
-        if(token1 != i_usdc) revert CCIPSendFacet_InvalidLocalSwapInput();
 
-        (inputTokenDust_, swapResult_) = LibUniswapV3._handleSwap(
-            i_uniRouter,
-            _uniswapV3Payload
-        );
+        // (inputTokenDust_, swapResult_) = LibUniswapSwaps._handleSwap(
+        //     i_uniRouter,
+        //     _uniswapV3Payload
+        // );
     }
 
     /**

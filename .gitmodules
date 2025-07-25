@@ -19,3 +19,18 @@
 [submodule "on-chain/lib/chainlink-brownie-contracts"]
 	path = on-chain/lib/chainlink-brownie-contracts
 	url = https://github.com/smartcontractkit/chainlink-brownie-contracts
+[submodule "on-chain/lib/v2-core"]
+	path = on-chain/lib/v2-core
+	url = https://github.com/uniswap/v2-core
+[submodule "on-chain/lib/universal-router"]
+	path = on-chain/lib/universal-router
+	url = https://github.com/uniswap/universal-router
+[submodule "on-chain/lib/permit2"]
+	path = on-chain/lib/permit2
+	url = https://github.com/uniswap/permit2
+[submodule "on-chain/lib/v4-periphery"]
+	path = on-chain/lib/v4-periphery
+	url = https://github.com/uniswap/v4-periphery
+[submodule "on-chain/lib/v4-core"]
+	path = on-chain/lib/v4-core
+	url = https://github.com/Uniswap/v4-core

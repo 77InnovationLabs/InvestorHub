@@ -11,7 +11,7 @@ import { FunctionsClient } from "@chainlink/contracts/src/v0.8/functions/dev/v1_
             Libraries
 /////////////////////////////*/
 import { FunctionsRequest } from "@chainlink/contracts/src/v0.8/functions/dev/v1_X/libraries/FunctionsRequest.sol";
-import { LibUniswapV3 } from "src/libraries/LibUniswapV3.sol";
+import { LibUniswapSwaps } from "src/libraries/LibUniswapSwaps.sol";
 
 abstract contract IHUBFunctions is FunctionsClient, VaultAutomationStorage {
     /*/////////////////////////////////////////////
@@ -118,7 +118,7 @@ abstract contract IHUBFunctions is FunctionsClient, VaultAutomationStorage {
 
             request.isFulfilled = true;
 
-            LibUniswapV3._handleSwap(
+            LibUniswapSwaps._handleSwap(
                 router, 
                 path, 
                 inputToken, 

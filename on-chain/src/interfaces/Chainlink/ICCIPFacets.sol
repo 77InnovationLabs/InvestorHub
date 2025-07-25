@@ -3,6 +3,9 @@ pragma solidity 0.8.26;
 
 interface ICCIPFacets {
 
+    /*/////////////////////////////////////////////
+                    Type Declarations
+    /////////////////////////////////////////////*/
     struct SwapPayload{
         bytes path;
         address inputToken;
@@ -45,8 +48,27 @@ interface ICCIPFacets {
         CompoundV3 //Not Supported Yet, just for testing
     }
 
+    /*/////////////////////////////////////////////
+                        Events
+    /////////////////////////////////////////////*/
+    ///@notice event emitted when a CCIP transaction is successfully sent
+    event CCIPSendFacet_MessageSent(bytes32 txId, uint64 destinationChainSelector, address sender, uint256 fees);
+
+    /*/////////////////////////////////////////////
+                        Error
+    /////////////////////////////////////////////*/
+    ///@notice error emitted when the function is not executed in the Diamond context
+    error CCIPSendFacet_CallerIsNotDiamond(address actualContext, address diamondContext);
+    ///@notice error emitted when the tokenOut of a local swap is not USDC
+    error CCIPSendFacet_InvalidLocalSwapInput();
+    ///@notice error emitted when the link balance is not enough
+    error CCIPSendFacet_NotEnoughBalance(uint256 fees, uint256 linkBalance);
+
+    /*/////////////////////////////////////////////
+                    Functions
+    /////////////////////////////////////////////*/
     function startCrossChainInvestment(
-        SwapPayload memory _uniswapV3Payload,
+        SwapPayload memory _swapPayload,
         CCPayload memory _payload
     ) external;
 }

@@ -18,7 +18,7 @@ import { ICCIPFacets } from "src/interfaces/Chainlink/ICCIPFacets.sol";
 import { SafeERC20 }  from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import { Client } from "@chainlink/contracts/src/v0.8/ccip/libraries/Client.sol";
 import { LibTransfers } from "src/libraries/LibTransfers.sol";
-import { LibUniswapV3 } from "src/libraries/LibUniswapV3.sol";
+import { LibUniswapSwaps } from "src/libraries/LibUniswapSwaps.sol";
 import { LibInvestment } from "src/libraries/LibInvestment.sol";
 
 contract CCIPReceiveFacet is CCIPReceiver {
@@ -93,56 +93,56 @@ contract CCIPReceiveFacet is CCIPReceiver {
     function _ccipReceive( //Add access control [using storage 🥲]
         Client.Any2EVMMessage memory _message
     ) internal override {
-        if(address(this) != i_diamond) revert CCIPReceiveFacet_CallerIsNotDiamond(address(this), i_diamond);
+        // if(address(this) != i_diamond) revert CCIPReceiveFacet_CallerIsNotDiamond(address(this), i_diamond);
 
-        uint256 contractInitialBalance = i_usdc.balanceOf(address(this)) - _message.destTokenAmounts[0].amount;
-        ICCIPFacets.CCPayload memory ccPayload;
-        (
-            ccPayload.swaps[0],
-            ccPayload.swaps[1], //if needed
-            ccPayload.investment
-        ) = abi.decode(
-            _message.data,
-            (
-                ICCIPFacets.SwapPayload, 
-                ICCIPFacets.SwapPayload,
-                ICCIPFacets.CCInvestment
-            )
-        );
+        // uint256 contractInitialBalance = i_usdc.balanceOf(address(this)) - _message.destTokenAmounts[0].amount;
+        // ICCIPFacets.CCPayload memory ccPayload;
+        // (
+        //     ccPayload.swaps[0],
+        //     ccPayload.swaps[1], //if needed
+        //     ccPayload.investment
+        // ) = abi.decode(
+        //     _message.data,
+        //     (
+        //         ICCIPFacets.SwapPayload, 
+        //         ICCIPFacets.SwapPayload,
+        //         ICCIPFacets.CCInvestment
+        //     )
+        // );
 
-        /**
-            @question How to improve the logic below?
-            **** Cross-chain transaction will always have ****
-            1. USDC as input token
-            2. At least one approve to invest a token
-            3. One call to Invest a token
+        // /**
+        //     @question How to improve the logic below?
+        //     **** Cross-chain transaction will always have ****
+        //     1. USDC as input token
+        //     2. At least one approve to invest a token
+        //     3. One call to Invest a token
 
-            **** Cross-chain transactions could have *****
-            1. Approve of total USDC amount to swap the USDC into one or two different tokens
-            2. One or two calls to Swap
-        */
-        i_usdc.safeIncreaseAllowance(i_uniRouter, _message.destTokenAmounts[0].amount);
+        //     **** Cross-chain transactions could have *****
+        //     1. Approve of total USDC amount to swap the USDC into one or two different tokens
+        //     2. One or two calls to Swap
+        // */
+        // i_usdc.safeIncreaseAllowance(i_uniRouter, _message.destTokenAmounts[0].amount);
 
-        if(ccPayload.swaps[0].path.length > ZERO){
-            (uint256 token0Dust, uint256 amountReceived) = LibUniswapV3._handleSwap(
-                i_uniRouter, 
-                ccPayload[0]
-            );
+        // if(ccPayload.swaps[0].path.length > ZERO){
+        //     (uint256 token0Dust, uint256 amountReceived) = LibUniswapV3._handleSwap(
+        //         i_uniRouter, 
+        //         ccPayload[0]
+        //     );
 
-            if(token0Dust > ZERO) LibTransfers._handleRefunds(ccPayload.investment.recipient, ccPayload.swaps[0].inputToken, token0Dust);
-        }
-        if(ccPayload.swaps[1].path.length > ZERO){
-            (uint256 token0Dust, uint256 amountReceived) = LibUniswapV3._handleSwap(
-                i_uniRouter, 
-                ccPayload[1]
-            );
+        //     if(token0Dust > ZERO) LibTransfers._handleRefunds(ccPayload.investment.recipient, ccPayload.swaps[0].inputToken, token0Dust);
+        // }
+        // if(ccPayload.swaps[1].path.length > ZERO){
+        //     (uint256 token0Dust, uint256 amountReceived) = LibUniswapV3._handleSwap(
+        //         i_uniRouter, 
+        //         ccPayload[1]
+        //     );
 
-            if(token0Dust > ZERO) LibTransfers._handleRefunds(ccPayload.investment.recipient, ccPayload.swaps[1].inputToken, token0Dust);
-        }
+        //     if(token0Dust > ZERO) LibTransfers._handleRefunds(ccPayload.investment.recipient, ccPayload.swaps[1].inputToken, token0Dust);
+        // }
 
-        LibInvestment._routeInvestment(ccPayload.investment, i_uniPosition);
+        // LibInvestment._routeInvestment(ccPayload.investment, i_uniPosition);
 
-        if(i_usdc.balanceOf(address(this)) >= contractInitialBalance) revert CCIPReceiveFacet_IncorrectAmountOfTokensSpent();
+        // if(i_usdc.balanceOf(address(this)) >= contractInitialBalance) revert CCIPReceiveFacet_IncorrectAmountOfTokensSpent();
     }
 
 

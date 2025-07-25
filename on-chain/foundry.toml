@@ -3,15 +3,22 @@ src = "src"
 out = "out"
 libs = ["lib"]
 remappings = [
-                "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/",
-                "@uniV3-periphery/contracts/=lib/v3-periphery/contracts/",
-                "@uniswap/v3-core/contracts/=lib/v3-core/contracts/",
-                "@bytes-utils/=node_modules/solidity-bytes-utils/",
-                "@uni-router-v3/contracts/=lib/swap-router-contracts/contracts/",
-                "@chainlink/contracts/=lib/chainlink-brownie-contracts/contracts/",
-                "cl/src/=lib/chainlink-local/src/"
+               "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/",
+               "@bytes-utils/=node_modules/solidity-bytes-utils/",
+                
+               "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/",
+               "@uniswap/v4-core/=lib/v4-core/",
+               "@uniswap/v4-periphery/=lib/v4-periphery/",
+               "@uniswap/permit2/=lib/permit2/",
+               "@uniswap/universal-router/=lib/universal-router/",
+               "@uniswap/v3-core/=lib/v3-core/",
+               "@uniswap/v2-core/=lib/v2-core/",
+                
+               "@chainlink/contracts/=lib/chainlink-brownie-contracts/contracts/",
+               "cl/src/=lib/chainlink-local/src/"
              ]
              
 [rpc_endpoints]
 localhost = "http://127.0.0.1:8545"
+
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options

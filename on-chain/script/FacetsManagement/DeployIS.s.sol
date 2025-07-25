@@ -13,8 +13,7 @@ import { DiamondInitializer } from "src/upgradeInitializers/DiamondInitializer.s
 import { OwnershipFacet } from "src/diamond/OwnershipFacet.sol";
 
 //Protocol Invest Facets
-import { StartPositionFacetR1 } from "src/facets/stake/UniswapV3/StartPositionFacetR1.sol";
-import { StartPositionFacetR3 } from "src/facets/stake/UniswapV3/StartPositionFacetR3.sol";
+import { StartPositionFacet } from "src/facets/stake/UniswapV3/StartPositionFacet.sol";
 import { CollectFeesFacet } from "src/facets/stake/UniswapV3/CollectFeesFacet.sol";
 import { DecreaseLiquidityFacet } from "src/facets/stake/UniswapV3/DecreaseLiquidityFacet.sol";
 import { IncreaseLiquidityFacet } from "src/facets/stake/UniswapV3/IncreaseLiquidityFacet.sol";
@@ -138,25 +137,15 @@ contract DeployInitialStructureScript{
         bytes4[] memory selectors = new bytes4[](1);
 
         if(config.uniRouterVersion == 1) {
-            facet_ = address(new StartPositionFacetR1(
+            facet_ = address(new StartPositionFacet(
                 config.diamond,
                 config.stake.uniswapV3PositionManager,
                 config.stake.uniswapV3Router,
                 config.vault
             ));
 
-            selectors[0] = StartPositionFacetR1.startPosition.selector;
-        } else {
-            facet_ = address(new StartPositionFacetR3(
-                config.diamond,
-                config.stake.uniswapV3PositionManager,
-                config.stake.uniswapV3Router,
-                config.vault
-            ));
-
-            selectors[0] = StartPositionFacetR3.startPosition.selector;
+            selectors[0] = StartPositionFacet.startPosition.selector;
         }
-
 
         ///@notice update accordingly with the action to be performed
         IDiamondCut.FacetCut memory facetCut = IDiamondCut.FacetCut({
