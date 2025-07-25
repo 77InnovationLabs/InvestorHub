@@ -62,6 +62,7 @@ export class PoolService {
           id: token0.network?._id?.toString() || '',
           name: token0.network?.name || '',
           graphqlUrl: token0.network?.graphqlUrl || '',
+          chainId: token0.network?.chainId || 0,
         },
       },
       token1: {
@@ -74,6 +75,7 @@ export class PoolService {
           id: token1.network?._id?.toString() || '',
           name: token1.network?.name || '',
           graphqlUrl: token1.network?.graphqlUrl || '',
+          chainId: token1.network?.chainId || 0,
         },
       },
       createdAtTimestamp: pool.block || '0',

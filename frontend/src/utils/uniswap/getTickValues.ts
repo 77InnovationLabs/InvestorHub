@@ -1,4 +1,4 @@
-import { EIP1193Provider } from "@privy-io/react-auth";
+import { ConnectedWallet, EIP1193Provider } from "@privy-io/react-auth";
 import { ethers } from "ethers";
 
 const MIN_TICK = -887272;
@@ -29,10 +29,10 @@ export function isValidTick(tick: number, tickSpacing: number): boolean {
     return tick % tickSpacing === 0;
 }
 
-export async function calculateTickValues(provider: EIP1193Provider, poolAddress: string, isTheSameNetwork: boolean) {
+export async function calculateTickValues(wallet: ConnectedWallet, poolAddress: string, isTheSameNetwork: boolean) {
     try {
         console.log('Is the same network:', isTheSameNetwork);
-        const ethersProvider = new ethers.BrowserProvider(provider);
+        const ethersProvider = new ethers.BrowserProvider(await wallet.getEthereumProvider());
         const poolContract = new ethers.Contract(poolAddress, IUniswapV3PoolABI, ethersProvider);
         const tickSpacing = await poolContract.tickSpacing();
 

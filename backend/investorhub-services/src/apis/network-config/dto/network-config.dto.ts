@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsUrl } from 'class-validator';
+import { IsString, IsNotEmpty, IsUrl, IsNumber } from 'class-validator';
 
 export class CreateNetworkConfigDto {
   @ApiProperty({ description: 'Network name', example: 'Ethereum Mainnet' })
@@ -19,4 +19,8 @@ export class UpdateNetworkConfigDto extends CreateNetworkConfigDto {}
 export class NetworkConfigResponseDto extends CreateNetworkConfigDto {
   @ApiProperty({ description: 'Network configuration ID' })
   id: string;
+
+  @ApiProperty({ description: 'Chain ID for the network', example: 1 })
+  @IsNumber()
+  chainId: number;
 } 

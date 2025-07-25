@@ -1,5 +1,6 @@
 import { Injectable, Logger, BadRequestException, NotFoundException } from '@nestjs/common';
 import { ethers } from 'ethers';
+import { ethers as ethersv6 } from 'ethersV6'
 import { AlphaRouter, MixedRoute, SwapType } from '@uniswap/smart-order-router';
 import { CurrencyAmount, Token, TradeType, Percent } from '@uniswap/sdk-core';
 import { NETWORKS_CONFIGS, ALL_FEE_TIERS } from '../../shared/helpers/constants';
@@ -41,8 +42,8 @@ export class QuoteService {
     }
 
     // Create provider and contract
-    const provider = new ethers.providers.JsonRpcProvider(networkConfig.providerUrl);
-    const quoterContract = new ethers.Contract(
+    const provider = new ethersv6.JsonRpcProvider(networkConfig.providerUrl);
+    const quoterContract = new ethersv6.Contract(
       networkConfig.quoterContract,
       QUOTER_ABI,
       provider
@@ -64,7 +65,7 @@ export class QuoteService {
       try {
         this.logger.debug(`Trying fee tier: ${fee}`);
         
-        const path = ethers.utils.solidityPack(
+        const path = ethersv6.solidityPacked(
           ['address', 'uint24', 'address'],
           [request.tokenAddress, BigInt(fee), usdToken.address]
         );
@@ -117,8 +118,8 @@ export class QuoteService {
     }
 
     // Create provider and contract
-    const provider = new ethers.providers.JsonRpcProvider(networkConfig.providerUrl);
-    const quoterContract = new ethers.Contract(
+    const provider = new ethersv6.JsonRpcProvider(networkConfig.providerUrl);
+    const quoterContract = new ethersv6.Contract(
       networkConfig.quoterContract,
       QUOTER_ABI,
       provider
@@ -139,7 +140,7 @@ export class QuoteService {
       try {
         this.logger.debug(`Trying fee tier: ${fee}`);
         
-        const path = ethers.utils.solidityPack(
+        const path = ethersv6.solidityPacked(
           ['address', 'uint24', 'address'],
           [request.tokenInAddress, BigInt(fee), request.tokenOutAddress]
         );

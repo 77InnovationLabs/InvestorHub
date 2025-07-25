@@ -174,6 +174,7 @@ export class TokenService {
         id: token.network.id.toString(),
         name: token.network.name,
         graphqlUrl: token.network.graphqlUrl,
+        chainId: token.network.chainId, // Ensure chainId is included
       },
     };
   }

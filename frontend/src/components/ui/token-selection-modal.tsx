@@ -36,8 +36,9 @@ const TokenSelectionModal: React.FC<TokenSelectionModalProps> = ({
         setError(null);
 
         try {
+            const chainId = privyWallets[0].chainId.replace('eip155:', '');
             const apiUrl = new URL(`${import.meta.env.VITE_API_URL}/tokens`);
-            apiUrl.searchParams.append('chainId', '11155111');
+            apiUrl.searchParams.append('chainId', chainId);
             apiUrl.searchParams.append('whitelist', 'true');
 
             const response = await fetch(apiUrl.toString(), {

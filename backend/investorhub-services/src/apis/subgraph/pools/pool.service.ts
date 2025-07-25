@@ -46,6 +46,7 @@ interface RawToken {
     id: string;
     name: string;
     graphqlUrl: string;
+    chainId?: number; // Allow chainId to be optional for subgraph tokens
   };
 }
 
@@ -114,13 +115,20 @@ export class PoolService {
         apr24h: apr24h.toFixed(2),
       };
     });
-    
+    // Patch token0 and token1 to include chainId in network
+    const patchToken = (token: RawToken): any => ({
+      ...token,
+      network: {
+        ...token.network,
+        chainId: token.network?.chainId || 0, // fallback to 0 if not present
+      },
+    });
     return {
       _id: pool.id,
       feeTier: pool.feeTier,
       address: pool.id,
-      token0: pool.token0,
-      token1: pool.token1,
+      token0: patchToken(pool.token0),
+      token1: patchToken(pool.token1),
       createdAtTimestamp: pool.createdAtTimestamp,
       poolDayData: poolDayDataWithApr,
     };

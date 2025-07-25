@@ -84,7 +84,7 @@ export async function getTokenPriceQuote(wallet: ConnectedWallet, tokenIn: Parti
   return {amountOut: toReadableAmount(amountOut, Number(tokenOut.decimals) ?? 18), path: path};
 }
 
-export async function getBestUSDPriceQuote(wallet: ConnectedWallet, tokenIn: PartialToken): Promise<{ quote: any, fee: number }> {
+export async function getBestUSDPriceQuote(wallet: ConnectedWallet, tokenIn: PartialToken, isTheSameNetwork: boolean): Promise<{ quote: any, fee: number }> {
   
   if(tokenIn.address === NETWORKS_CONFIGS[wallet.chainId].usdToken.address) {
     return { quote: "1", fee: 0 }; //TODO: get the real price for USD

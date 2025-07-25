@@ -14,4 +14,5 @@ export interface PartialToken {
     symbol: string;
     address: string;
     decimals: string;
+    network?: Network;
 }

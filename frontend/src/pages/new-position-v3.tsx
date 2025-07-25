@@ -77,12 +77,61 @@ const NewPositionV3: React.FC = () => {
             console.error('Error fetching pool by ID:', error);
             throw error;
         }
-    }
+    };
 
-    const getUSDPrice = async (connectedWallet: ConnectedWallet, token0: PartialToken) => {
-        const quoteResponse = await getBestUSDPriceQuote(connectedWallet, token0);
-        return quoteResponse;
-    }
+    const getUSDPrice = async (connectedWallet: ConnectedWallet, token0: PartialToken, isTheSameNetwork: boolean) => {
+        if (isTheSameNetwork) {
+            const quoteResponse = await getBestUSDPriceQuote(connectedWallet, token0, isTheSameNetwork);
+            return quoteResponse;
+        } else {
+            // Call backend API
+            const network = `eip155:${token0?.network?.chainId}`;
+            const apiUrl = `${import.meta.env.VITE_API_URL}/quote/usd-price`;
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    network,
+                    tokenAddress: token0.address,
+                    tokenDecimals: token0.decimals,
+                    tokenSymbol: token0.symbol,
+                }),
+            });
+            if (!response.ok) {
+                throw new Error(`Failed to fetch USD price from backend: ${response.statusText}`);
+            }
+            const data = await response.json();
+            return data;
+        }
+    };
+
+    const getTickValues = async (connectedWallet: ConnectedWallet, pool: PoolData, isTheSameNetwork: boolean) => {
+        if (isTheSameNetwork) {
+            const tickValuesData = await calculateTickValues(connectedWallet, pool?.address, isTheSameNetwork);
+            return tickValuesData;
+        } else {
+            // Call backend API
+            const network = `eip155:${pool?.token0?.network?.chainId}`;
+            const apiUrl = `${import.meta.env.VITE_API_URL}/tick/tick-values`;
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    network,
+                    poolAddress: pool?.address,
+                }),
+            });
+            if (!response.ok) {
+                throw new Error(`Failed to fetch tick values from backend: ${response.statusText}`);
+            }
+            const data = await response.json();
+            return data;
+        }
+    };
 
     const fetchCustomTokenInfo = async (address: string) => {
         if (!address.trim() || !ready || privyWallets.length === 0) {
@@ -102,7 +151,7 @@ const NewPositionV3: React.FC = () => {
             setCustomTokenBalance(tokenBalance);
 
             try {
-                const usdPrice = await getUSDPrice(privyWallets[0], tokenDetails);
+                const usdPrice = await getUSDPrice(privyWallets[0], tokenDetails, true); // This will be always true because the user has to select the token from the same network
                 setCustomTokenUSDPrice(usdPrice.quote);
             } catch (priceError) {
                 console.warn('Could not fetch USD price for custom token:', priceError);
@@ -387,14 +436,12 @@ const NewPositionV3: React.FC = () => {
                 console.log('Wallets:', privyWallets);
                 console.log('Ready:', ready);
                 if (ready) {
-                    const provider = await privyWallets[0].getEthereumProvider();
                     const isTheSameNetworkParam = await checkTheSameNetwork(data.token0.network.name); // TODO: Better way to check if the network is the same
-                    
-                    const tickValuesData = await calculateTickValues(provider, data.address, isTheSameNetworkParam);
+                    const tickValuesData = await getTickValues(privyWallets[0], data, isTheSameNetworkParam);
                     setTickValues(tickValuesData);
                     console.log('Tick values:', tickValuesData);
-                    const token0PriceData = await getUSDPrice(privyWallets[0], data.token0);
-                    const token1PriceData = await getUSDPrice(privyWallets[0], data.token1);
+                    const token0PriceData = await getUSDPrice(privyWallets[0], data.token0, isTheSameNetworkParam);
+                    const token1PriceData = await getUSDPrice(privyWallets[0], data.token1, isTheSameNetworkParam);
                     console.log('[TOKEN0]Token0 price data:', token0PriceData);
                     console.log('[TOKEN1] Token1 price data:', token1PriceData);
                     setToken0Price(token0PriceData.quote);
