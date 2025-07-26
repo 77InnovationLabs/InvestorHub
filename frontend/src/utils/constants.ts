@@ -24,7 +24,7 @@ export const NETWORKS_CONFIGS: Record<string, NetworkConfig> = {
     },
     "eip155:84532": {
         usdToken: {
-            address: '0x0000000000000000000000000000000000000000',
+            address: '0x036cbd53842c5426634e7929541ec2318f3dcf7e',
             decimals: 6,
         },
         quoterContract: "0xC5290058841028F1614F3A6F0F5816cAd0df5E27",

@@ -133,6 +133,37 @@ const NewPositionV3: React.FC = () => {
         }
     };
 
+    const getPriceQuote = async (wallet: ConnectedWallet, tokenIn: PartialToken, tokenOut: Token, fee: number, amountIn: number, isTheSameNetwork: boolean) => {
+        if (isTheSameNetwork) {
+            const quote = await getTokenPriceQuote(wallet, tokenIn, tokenOut, fee, amountIn);
+            return quote;
+        } else {
+            // Call backend API
+            const network = `eip155:${tokenIn?.network?.chainId}`;
+            const apiUrl = `${import.meta.env.VITE_API_URL}/quote/token-price`;
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    network,
+                    tokenInAddress: tokenIn.address,
+                    tokenInDecimals: tokenIn.decimals,
+                    tokenInSymbol: tokenIn.symbol,
+                    tokenOutAddress: tokenOut.address,
+                    tokenOutDecimals: tokenOut.decimals,
+                    tokenOutSymbol: tokenOut.symbol,
+                }),
+            });
+            if (!response.ok) {
+                throw new Error(`Failed to fetch token price quote from backend: ${response.statusText}`);
+            }
+            const data = await response.json();
+            return data;
+        }
+    };
+
     const fetchCustomTokenInfo = async (address: string) => {
         if (!address.trim() || !ready || privyWallets.length === 0) {
             return;
@@ -200,7 +231,57 @@ const NewPositionV3: React.FC = () => {
                 otherTokenQuote?: string;
             } = {};
 
-            if (isToken0 || isToken1) {
+
+            if (!isTheSameNetwork) {
+                // Cross-chain: Convert investment to USD and split between pool tokens
+                const investmentUSD = parseFloat(investmentAmount) * parseFloat(customTokenUSDPrice || '0');
+                const halfInvestmentUSD = investmentUSD / 2;
+                
+                // Get USD token for the pool's network
+                const poolNetwork = `eip155:${poolData.token0.network.chainId}`;
+                const usdToken = NETWORKS_CONFIGS[poolNetwork]?.usdToken;
+                
+                if (!usdToken) {
+                    throw new Error(`USD token not found for network ${poolNetwork}`);
+                }
+
+                // Create USD token object for quotes
+                const usdTokenFormatted: Token = {
+                    id: usdToken.address,
+                    name: 'USD Coin',
+                    symbol: 'USDC',
+                    address: usdToken.address,
+                    decimals: usdToken.decimals.toString(),
+                    network: poolData.token0.network,
+                };
+
+                // Get quotes using USD as input for each pool token
+                const quoteToken0 = await getPriceQuote(
+                    privyWallets[0],
+                    usdTokenFormatted,
+                    poolData.token0,
+                    Number(poolData.feeTier),
+                    halfInvestmentUSD,
+                    false,
+                );
+
+                const quoteToken1 = await getPriceQuote(
+                    privyWallets[0],
+                    usdTokenFormatted,
+                    poolData.token1,
+                    Number(poolData.feeTier),
+                    halfInvestmentUSD,
+                    false,
+                );
+
+                quotes.token0Quote = quoteToken0.quote?.toString() || '0';
+                quotes.token1Quote = quoteToken1.quote?.toString() || '0';
+                console.log(`Cross-chain quote for ${halfInvestmentUSD} USD to ${poolData.token0.symbol}:`, quoteToken0);
+                console.log(`Cross-chain quote for ${halfInvestmentUSD} USD to ${poolData.token1.symbol}:`, quoteToken1);
+
+                // TODO: Implement cross-chain mint logic here
+                
+            } else if (isToken0 || isToken1) {
                 // If typed token is one of the pool tokens
                 const otherToken = isToken0 ? poolData.token1 : poolData.token0;
 
@@ -211,12 +292,13 @@ const NewPositionV3: React.FC = () => {
                 };
 
                 // Get quote for typed token as input and other token as output
-                const quote = await getTokenPriceQuote(
+                const quote = await getPriceQuote(
                     privyWallets[0],
                     customTokenDetails,
                     otherTokenFormatted,
                     Number(poolData.feeTier),
-                    halfInvestment
+                    halfInvestment,
+                    true, // This will be always true because the user has to select the token from the same network
                 );
 
                 const path = quote.path;
@@ -271,21 +353,25 @@ const NewPositionV3: React.FC = () => {
                 };
 
                 // Get quotes for both tokens
-                const quoteToken0 = await getTokenPriceQuote(
+                const quoteToken0 = await getPriceQuote(
                     privyWallets[0],
                     customTokenDetails,
                     token0Formatted,
                     Number(poolData.feeTier),
-                    halfInvestment
+                    halfInvestment,
+                    true, // This will be always true because the user has to select the token from the same network
                 );
 
-                const quoteToken1 = await getTokenPriceQuote(
+                const quoteToken1 = await getPriceQuote(
                     privyWallets[0],
                     customTokenDetails,
                     token1Formatted,
                     Number(poolData.feeTier),
-                    halfInvestment
+                    halfInvestment,
+                    true, // This will be always true because the user has to select the token from the same network
                 );
+
+
 
                 quotes.token0Quote = quoteToken0.amountOut;
                 quotes.token1Quote = quoteToken1.amountOut;
@@ -301,7 +387,7 @@ const NewPositionV3: React.FC = () => {
                 const fullSwapParams: FullSwapParams = {
                     inputToken: customTokenDetails.address,
                     totalAmountIn: fromReadableAmount(Number(investmentAmount), Number(customTokenDetails.decimals)).toString(),
-                    payload: [{ 
+                    payload: [{
                         path: quoteToken0.path,
                         amountInForInputToken: fromReadableAmount(Number(halfInvestment), Number(customTokenDetails.decimals)).toString(),
                         deadline: "0",
@@ -417,8 +503,8 @@ const NewPositionV3: React.FC = () => {
         if (privyWallets.length > 0) {
             setIsTheSameNetwork(name === NETWORKS_CONFIGS[privyWallets[0].chainId].name);
             return name === NETWORKS_CONFIGS[privyWallets[0].chainId].name;
-        } 
-        
+        }
+
         setIsTheSameNetwork(false);
         return false;
 
@@ -489,6 +575,23 @@ const NewPositionV3: React.FC = () => {
 
             {poolData && (
                 <div className="bg-white rounded-xl shadow-sm border-t-2 border-sky-50 sm:p-6">
+                    {isWalletConnected && !isTheSameNetwork && poolData && (
+                        <div className='flex items-center justify-center mb-4'>
+                            <div className="bg-orange-100 border border-orange-400 text-orange-700 px-4 py-3 rounded-md w-full">
+                                <div className="flex items-center space-x-2">
+                                    <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
+                                    <span className="font-medium">Cross-Chain Transaction</span>
+                                </div>
+                                <div className="mt-2 text-sm">
+                                    <p className="font-semibold">
+                                        {NETWORKS_CONFIGS[privyWallets[0].chainId]?.name || 'Unknown Network'} → {poolData.token0.network.name}
+                                    </p>
+                                </div>
+                                <p className="text-xs mt-2 opacity-75">This transaction will be processed through our cross-chain infrastructure.</p>
+                            </div>
+                        </div>
+                    )}
+
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:w-[900px]">
                         <div className="space-y-2 pt-2 w-96 min-h-full">
                             <h1 className="text-xl font-bold text-gray-900 ml-4">Start Investing</h1>
