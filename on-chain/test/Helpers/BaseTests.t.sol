@@ -52,7 +52,7 @@ contract BaseTests is Test {
             helperConfig,
             d
         ) = deploy.run();
-        //Set the configs to a global variable
+        //3. Set the configs to a global variable
         c = helperConfig.getConfig();
 
         //Setup

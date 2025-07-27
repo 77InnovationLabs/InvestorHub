@@ -12,7 +12,7 @@ anvil :
 
 # Build contracts
 build:
-	forge build
+	forge build --via-ir
 
 # Clean the environment
 clean:
@@ -44,7 +44,7 @@ fork_testnet:
 
 # Execute Forked tests
 forked_test:
-	forge test --match-contract DiamondForked.t.sol -vvv
+	forge test --match-contract DiamondForked.t.sol -vvvvv
 
 format:
 	forge fmt

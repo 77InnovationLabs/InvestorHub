@@ -27,6 +27,12 @@ library LibInvestment {
     /////////////////////////////////////////////*/
     using SafeERC20 for IERC20;
 
+    /*///////////////////////////////////
+                Events
+    ///////////////////////////////////*/
+    ///@notice event emitted when a new position is opened.
+    event LibInvestment_PositionStarted(uint256 tokenId, uint128 liquidity, uint256 amount0, uint256 amount1);
+
     /*/////////////////////////////////////////////
                         Functions
     /////////////////////////////////////////////*/
@@ -77,12 +83,12 @@ library LibInvestment {
         });
 
         // Mint position and return the results
-        (uint256 tokenId, uint256 liquidity, uint256 amount0, uint256 amount1) = INonFungiblePositionManager(_target).mint(payload);
+        (uint256 tokenId, uint128 liquidity, uint256 amount0, uint256 amount1) = INonFungiblePositionManager(_target).mint(payload);
 
         // Refund any dust left in the contract
         LibTransfers._handleRefunds(_investment.recipient, _investment.token0, amount0 - _investment.amount0Min);
         LibTransfers._handleRefunds(_investment.recipient, _investment.token1, amount1 - _investment.amount1Min);
 
-        //TODO emit and event
+        emit LibInvestment_PositionStarted(tokenId, liquidity, amount0, amount1);
     }
 }

@@ -118,14 +118,14 @@ abstract contract IHUBFunctions is FunctionsClient, VaultAutomationStorage {
 
             request.isFulfilled = true;
 
-            LibUniswapSwaps._handleSwap(
-                router, 
-                path, 
-                inputToken, 
-                deadline, 
-                amountInForToken0, 
-                amountOutMin
-            );
+            // LibUniswapSwaps._handleSwap(
+            //     router, 
+            //     path, 
+            //     inputToken, 
+            //     deadline, 
+            //     amountInForToken0, 
+            //     amountOutMin
+            // );
 
             emit IHUBFunctions_CallbackReceivedAndSwapSucceed(_requestId);
         } else {

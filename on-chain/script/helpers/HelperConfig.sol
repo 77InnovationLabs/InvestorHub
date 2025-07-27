@@ -23,8 +23,8 @@ contract HelperConfig is Script {
     }
 
     struct DexSpecifications{
-        address routerUniV3;
-        uint8 uniRouterVersion;
+        address universalRouter;
+        address permit2;
     }
 
     struct StakingSpecifications{
@@ -112,8 +112,8 @@ contract HelperConfig is Script {
             initializer: address(0),
             usdc: 	0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913,
             dex: DexSpecifications({
-                routerUniV3: 0x2626664c2603336E57B271c5C0b26F421741e481,
-                uniRouterVersion: 3
+                universalRouter: 0x6fF5693b99212Da76ad316178A184AB56D299b43,
+                permit2: 0x000000000022D473030F116dDEE9F6B43aC78BA3
             }),
             stake: StakingSpecifications({
                 aavePool: address(0),
@@ -146,8 +146,8 @@ contract HelperConfig is Script {
             initializer: address(0),
             usdc: 0xaf88d065e77c8cC2239327C5EDb3A432268e5831,
             dex: DexSpecifications({
-                routerUniV3: 0xE592427A0AEce92De3Edee1F18E0157C05861564,
-                uniRouterVersion: 1
+                universalRouter: 0xA51afAFe0263b40EdaEf0Df8781eA9aa03E381a3,
+                permit2: 0x000000000022D473030F116dDEE9F6B43aC78BA3
             }),
             stake: StakingSpecifications({
                 aavePool: address(0),
@@ -172,36 +172,35 @@ contract HelperConfig is Script {
     ///////////////////////////////////*/
     function getFujiConfig() public view returns (NetworkConfig memory fujiNetworkConfig_) {
 
-        fujiNetworkConfig_ = NetworkConfig({
-            admin: vm.envAddress("ADMIN_TESTNET_PUBLIC_KEY"),
-            multisig: vm.envAddress("MULTISIG_TESTNET_FAKE_ADDRESS"), //Burner Wallet for Forked Tests
-            vault: address(0),
-            ownershipFacet: address(0),
-            cutFacet: address(0),
-            loupeFacet: address(0),
-            diamond: address(0),
-            initializer: address(0),
-            usdc: 0x5425890298aed601595a70AB815c96711a31Bc65,
-            dex: DexSpecifications({
-                routerUniV3: 0xE592427A0AEce92De3Edee1F18E0157C05861564,
-                uniRouterVersion: 3
-            }),
-            stake: StakingSpecifications({
-                aavePool: address(0),
-                compoundController: address(0),
-                uniswapFactory: address(0),
-                uniswapV3PositionManager: address(0)
-            }),
-            cl: ChainlinkInfos({
-                ccipRouter: 0xF694E193200268f9a4868e4Aa017A0118C9a8177,
-                linkToken: 0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846,
-                feedsAggregator: 0x34C4c526902d88a3Aa98DB8a9b802603EB1E3470,
-                heartbeat: 86_400,
-                functionsRouter: 0xA9d587a00A31A52Ed70D6026794a8FC5E2F5dCb0,
-                donId: 0x66756e2d6176616c616e6368652d66756a692d31000000000000000000000000,
-                subscriptionId: 1212
-            })
-        });
+        // fujiNetworkConfig_ = NetworkConfig({
+        //     admin: vm.envAddress("ADMIN_TESTNET_PUBLIC_KEY"),
+        //     multisig: vm.envAddress("MULTISIG_TESTNET_FAKE_ADDRESS"), //Burner Wallet for Forked Tests
+        //     vault: address(0),
+        //     ownershipFacet: address(0),
+        //     cutFacet: address(0),
+        //     loupeFacet: address(0),
+        //     diamond: address(0),
+        //     initializer: address(0),
+        //     usdc: 0x5425890298aed601595a70AB815c96711a31Bc65,
+        //     dex: DexSpecifications({
+        //         universalRouter: 0xE592427A0AEce92De3Edee1F18E0157C05861564
+        //     }),
+        //     stake: StakingSpecifications({
+        //         aavePool: address(0),
+        //         compoundController: address(0),
+        //         uniswapFactory: address(0),
+        //         uniswapV3PositionManager: address(0)
+        //     }),
+        //     cl: ChainlinkInfos({
+        //         ccipRouter: 0xF694E193200268f9a4868e4Aa017A0118C9a8177,
+        //         linkToken: 0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846,
+        //         feedsAggregator: 0x34C4c526902d88a3Aa98DB8a9b802603EB1E3470,
+        //         heartbeat: 86_400,
+        //         functionsRouter: 0xA9d587a00A31A52Ed70D6026794a8FC5E2F5dCb0,
+        //         donId: 0x66756e2d6176616c616e6368652d66756a692d31000000000000000000000000,
+        //         subscriptionId: 1212
+        //     })
+        // });
     }
 
     function getSepoliaConfig() public view returns (NetworkConfig memory sepoliaNetworkConfig_) {
@@ -216,8 +215,8 @@ contract HelperConfig is Script {
             initializer: 0xDF407457648A2aa756346461C13Db181325b6bd7,
             usdc: 0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238,
             dex: DexSpecifications({
-                routerUniV3: 0x3bFA4769FB09eefC5a80d6E87c3B9C650f7Ae48E,
-                uniRouterVersion: 3
+                universalRouter: 0x3A9D48AB9751398BbFa63ad67599Bb04e4BdF98b,
+                permit2: 0x000000000022D473030F116dDEE9F6B43aC78BA3
             }),
             stake: StakingSpecifications({
                 aavePool: address(0),
@@ -249,8 +248,8 @@ contract HelperConfig is Script {
             initializer: 0xA501e51E5902879F28b5Bb6F74B701E7FD997625,
             usdc: 0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238,
             dex: DexSpecifications({
-                routerUniV3: 0x3bFA4769FB09eefC5a80d6E87c3B9C650f7Ae48E,
-                uniRouterVersion: 3
+                universalRouter: 0x95273d871c8156636e114b63797d78D7E1720d81,
+                permit2: 0x000000000022D473030F116dDEE9F6B43aC78BA3
             }),
             stake: StakingSpecifications({
                 aavePool: address(0),
@@ -293,8 +292,8 @@ contract HelperConfig is Script {
             initializer: address(0),
             usdc: address(0),
             dex: DexSpecifications({
-                routerUniV3: address(0),
-                uniRouterVersion: 1
+                universalRouter: address(0),
+                permit2: address(0)
             }),
             stake: StakingSpecifications({
                 aavePool: address(0),

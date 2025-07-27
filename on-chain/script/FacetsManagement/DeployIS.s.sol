@@ -136,16 +136,15 @@ contract DeployInitialStructureScript{
     function _addStartPositionFacet(HelperConfig.NetworkConfig memory config) internal returns(address facet_){
         bytes4[] memory selectors = new bytes4[](1);
 
-        if(config.uniRouterVersion == 1) {
-            facet_ = address(new StartPositionFacet(
-                config.diamond,
-                config.stake.uniswapV3PositionManager,
-                config.stake.uniswapV3Router,
-                config.vault
-            ));
+        facet_ = address(new StartPositionFacet(
+            config.diamond,
+            config.vault,
+            config.stake.uniswapV3PositionManager,
+            config.dex.universalRouter,
+            config.dex.permit2
+        ));
 
-            selectors[0] = StartPositionFacet.startPosition.selector;
-        }
+        selectors[0] = StartPositionFacet.startPosition.selector;
 
         ///@notice update accordingly with the action to be performed
         IDiamondCut.FacetCut memory facetCut = IDiamondCut.FacetCut({
@@ -280,7 +279,7 @@ contract DeployInitialStructureScript{
             config.usdc,
             config.cl.ccipRouter,
             config.cl.linkToken,
-            config.dex.routerUniV3
+            config.dex.universalRouter
         );
         
         bytes4[] memory selectors = new bytes4[](1);
@@ -314,7 +313,7 @@ contract DeployInitialStructureScript{
         CCIPReceiveFacet facet = new CCIPReceiveFacet(
             config.diamond,
             config.usdc,
-            config.dex.routerUniV3,
+            config.dex.universalRouter,
             config.stake.uniswapV3PositionManager,
             config.cl.ccipRouter
         );
