@@ -27,7 +27,7 @@ contract BaseTests is Test {
     /////////////////////////////////////////////////*/
     address d;
     address multisig;
-    uint16 constant DEADLINE = 600;
+    uint48 constant DEADLINE = 600;
 
     /*/////////////////////////////////////////////////
                         MOCKED USERS

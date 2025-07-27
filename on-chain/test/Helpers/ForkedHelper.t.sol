@@ -19,7 +19,8 @@ import { IERC721 } from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import { CCIPLocalSimulatorFork, Register } from "cl/src/ccip/CCIPLocalSimulatorFork.sol";
 
 //Uniswap
-import { IStartPositionFacet, INonFungiblePositionManager, IAllowanceTransfer, PoolKey } from "src/interfaces/UniswapV3/IStartPositionFacet.sol";
+import { IStartPositionFacet, INonFungiblePositionManager } from "src/interfaces/UniswapV3/IStartPositionFacet.sol";
+import { IAllowanceTransfer } from "@uniswap/permit2/src/interfaces/IAllowanceTransfer.sol";
 import { IUniswapV3Pool } from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
 import { IUniswapV3Factory } from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Factory.sol";
 import { IV3SwapRouter } from "@uniswap/routers/contracts/interfaces/IV3SwapRouter.sol";
@@ -230,7 +231,7 @@ contract ForkedHelper is BaseTests {
     /*//////////////////////////////////////////////////////
                         UniversalRouter Helpers
     //////////////////////////////////////////////////////*/
-    function _generatePermit2Payload(address _token, uint160 _amount, uint48 _nonce) internal returns(IAllowanceTransfer.PermitDetails memory details_){
+    function _generatePermit2Payload(address _token, uint160 _amount, uint48 _nonce) internal view returns(IAllowanceTransfer.PermitDetails memory details_){
         // Create the `PermitDetails` array
         details_ = IAllowanceTransfer.PermitDetails({
             token: _token,
@@ -264,6 +265,15 @@ contract ForkedHelper is BaseTests {
             })),
             tokenIn: _tokenIn,
             tokenOut: _tokenOut
+        });
+    }
+
+    function _generateAllowanceTransferDetails(address _user, address _to, uint160 _amount, address _token) internal view returns(IAllowanceTransfer.AllowanceTransferDetails memory transfer_){
+        transfer_ = IAllowanceTransfer.AllowanceTransferDetails({
+            from: _user,
+            to: _to,
+            amount: _amount,
+            token: _token
         });
     }
 }

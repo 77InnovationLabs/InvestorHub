@@ -4,7 +4,7 @@ pragma solidity 0.8.26;
 /*///////////////////////////////////
             Interfaces
 ///////////////////////////////////*/
-import { IStartPositionFacet, INonFungiblePositionManager, IAllowanceTransfer, PoolKey } from "src/interfaces/UniswapV3/IStartPositionFacet.sol";
+import { IStartPositionFacet, INonFungiblePositionManager, IPermit2 } from "src/interfaces/UniswapV3/IStartPositionFacet.sol";
 
 /*///////////////////////////////////
             Libraries
@@ -29,7 +29,7 @@ contract StartPositionFacet is IStartPositionFacet {
     ///@notice immutable variable to store the Uniswap UniversalRouter address
     address immutable i_universalRouter;
     ///@notice immutable variable to store the Permit2 contract address
-    address immutable i_permit2;
+    IPermit2 immutable i_permit2;
     ///@notice immutable variable to store the UniswapV3 position manager
     INonFungiblePositionManager immutable i_positionManager;
 
@@ -52,7 +52,7 @@ contract StartPositionFacet is IStartPositionFacet {
         i_vault = _protocolVault;
         i_positionManager = INonFungiblePositionManager(_positionManager);
         i_universalRouter = _router;
-        i_permit2 = _permit2;
+        i_permit2 = IPermit2(_permit2);
 
         ///@dev ⚠️ never update state variables inside ⚠️
     }
@@ -64,17 +64,22 @@ contract StartPositionFacet is IStartPositionFacet {
     /**
         *@notice Creates a new liquidity position
         *@param _params inherited from INonFungiblePositionManager.MintParams
-        *@param _permitSingle the permit to transfer tokens on behalf of the user
+        *@param _permitBatch the permit to transfer tokens on behalf of the user
         *@param _signature the signature to verify the permit
+        *@param _transferDetails the Permit2 data to transfer the investment tokens
         *@param _swapPayload the payload to perform swaps
         *@param _deadline the deadline for the swap
-        *@dev this function can be called by anyone, but the caller must have enough balance to
-        * cover the amounts to invest in the position.
+        
+        *@dev Things that this function must be able to do:
+        1. Receive one investment token, and some arbitrary - Would require swaps to only one of the investment token
+        2. Receive both token needed to create an investment.
+        3. Receive none of the token to invest and still handle up to teen swaps and execute the investment.
     */
     function startPosition(
         INonFungiblePositionManager.MintParams memory _params,
-        IAllowanceTransfer.PermitBatch calldata _permitSingle,
+        IPermit2.PermitBatch calldata _permitBatch,
         bytes calldata _signature,
+        IPermit2.AllowanceTransferDetails[] memory _transferDetails,
         SwapPayload[] memory _swapPayload,
         uint48 _deadline
     ) external {
@@ -83,25 +88,27 @@ contract StartPositionFacet is IStartPositionFacet {
         if(_swapPayload.length > MAX_PAYLOAD_SIZE) revert StartPositionFacet_InvalidPayloadSize();
         //TODO: add sanity checks
 
-        uint256 amountOfToken0ToInvest = IERC20(_params.token0).balanceOf(address(this));
-        uint256 amountOfToken1ToInvest = IERC20(_params.token1).balanceOf(address(this));
+        uint256 contractAmountOfToken0ToInvest = IERC20(_params.token0).balanceOf(address(this));
+        uint256 contractAmountOfToken1ToInvest = IERC20(_params.token1).balanceOf(address(this));
 
         //TODO if only one swap is performed, the contract will have only half of the money
         //We need to ensure the total amount is transferred in a scenario the user has
         //one of the tokens
         if(_swapPayload.length > ZERO)  {
-            LibUniswapSwaps._handleSwap(i_universalRouter,  _permitSingle, _signature, _swapPayload, _deadline);
+            LibUniswapSwaps._handleSwap(i_universalRouter,  _permitBatch, _signature, _swapPayload, _deadline);
+        } else {
+            i_permit2.transferFrom(_transferDetails);
         }
 
-        amountOfToken0ToInvest = IERC20(_params.token0).balanceOf(address(this)) - amountOfToken0ToInvest;
-        amountOfToken1ToInvest = IERC20(_params.token1).balanceOf(address(this)) - amountOfToken1ToInvest;
+        uint256 receivedAmountOfToken0ToInvest = IERC20(_params.token0).balanceOf(address(this)) - contractAmountOfToken0ToInvest;
+        uint256 receivedAmountOfToken1ToInvest = IERC20(_params.token1).balanceOf(address(this)) - contractAmountOfToken1ToInvest;
 
-        if(amountOfToken0ToInvest < _params.amount0Desired) revert StartPositionFacet_InsufficientAmountToInvest(amountOfToken0ToInvest);
-        if(amountOfToken1ToInvest < _params.amount1Desired) revert StartPositionFacet_InsufficientAmountToInvest(amountOfToken1ToInvest);
+        if(receivedAmountOfToken0ToInvest < _params.amount0Desired) revert StartPositionFacet_InsufficientAmountToInvest(receivedAmountOfToken0ToInvest);
+        if(receivedAmountOfToken1ToInvest < _params.amount1Desired) revert StartPositionFacet_InsufficientAmountToInvest(receivedAmountOfToken1ToInvest);
 
         //charge protocol fee over the totalAmountIn
-        _params.amount0Desired = LibTransfers._handleProtocolFee(i_vault, _params.token0, amountOfToken0ToInvest);
-        _params.amount1Desired = LibTransfers._handleProtocolFee(i_vault, _params.token1, amountOfToken1ToInvest);
+        _params.amount0Desired = LibTransfers._handleProtocolFee(i_vault, _params.token0, receivedAmountOfToken0ToInvest);
+        _params.amount1Desired = LibTransfers._handleProtocolFee(i_vault, _params.token1, receivedAmountOfToken1ToInvest);
 
         // Mint position and return the results
         (uint256 tokenId, uint128 liquidity, uint256 amount0, uint256 amount1) = i_positionManager.mint(_params);

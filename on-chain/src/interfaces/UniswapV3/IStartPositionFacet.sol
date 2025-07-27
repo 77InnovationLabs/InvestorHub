@@ -4,13 +4,12 @@ pragma solidity 0.8.26;
 /*/////////////////////////////
             Imports
 /////////////////////////////*/
-import { PoolKey } from "@uniswap/v4-core/src/types/PoolKey.sol";
 
 /*/////////////////////////////
             Interfaces
 /////////////////////////////*/
 import { INonFungiblePositionManager } from "src/interfaces/UniswapV3/INonFungiblePositionManager.sol";
-import { IAllowanceTransfer } from "@uniswap/permit2/src/interfaces/IAllowanceTransfer.sol";
+import { IPermit2 } from "@uniswap/permit2/src/interfaces/IPermit2.sol";
 
 /*/////////////////////////////
             Libraries
@@ -47,6 +46,8 @@ interface IStartPositionFacet {
     error StartPositionFacet_InvalidPayloadSize();
     ///@notice error emitted when the amount to invest is insufficient
     error StartPositionFacet_InsufficientAmountToInvest(uint256 amount);
+    ///@notice error emitted when the swapPayload array is bigger than the number of tokens received
+    error StartPositionFacet_SwapPayloadCantBeBiggerThanTheNumberOfTokensReceived();
 
     /*///////////////////////////////////
                 Functions
@@ -54,8 +55,9 @@ interface IStartPositionFacet {
     
     function startPosition(
         INonFungiblePositionManager.MintParams memory _params, 
-        IAllowanceTransfer.PermitBatch calldata _permitBatch,
+        IPermit2.PermitBatch calldata _permitBatch,
         bytes calldata _signature,
+        IPermit2.AllowanceTransferDetails[] memory _transfer,
         SwapPayload[] memory _swapPayload, 
         uint48 _deadline
     ) external;

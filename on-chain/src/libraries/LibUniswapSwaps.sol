@@ -10,15 +10,12 @@ import { Currency } from "@uniswap/v4-core/src/types/Currency.sol";
 /*/////////////////////////////
             Interfaces
 /////////////////////////////*/
-import { IPermit2 } from "@uniswap/permit2/src/interfaces/IPermit2.sol";
-import { IV4Router } from "@uniswap/v4-periphery/src/interfaces/IV4Router.sol";
 import { IAllowanceTransfer } from "@uniswap/permit2/src/interfaces/IAllowanceTransfer.sol";
 import { IStartPositionFacet } from "src/interfaces/UniswapV3/IStartPositionFacet.sol";
 
 /*/////////////////////////////
             Libraries
 /////////////////////////////*/
-import { IERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import { Bytes } from "@openzeppelin/contracts/utils/Bytes.sol";
 import { Commands } from "@uniswap/universal-router/contracts/libraries/Commands.sol";
 
@@ -80,11 +77,13 @@ library LibUniswapSwaps{
             inputs[i + 1] = abi.encode(_swapPayload[i].actions, params);
         }
 
+        // This is what is called inside of the UniversalRouter
+        //  else if (command == Commands.PERMIT2_PERMIT_BATCH) {
+        //       (IAllowanceTransfer.PermitBatch memory permitBatch,) =
+        //           abi.decode(inputs, (IAllowanceTransfer.PermitBatch, bytes));
+        //       bytes calldata data = inputs.toBytes(1);
+        //       PERMIT2.permit(lockedBy, permitBatch, data);
+        //  }
         IUniversalRouter(_router).execute(commands, inputs, _deadline);
     }
-
-    /*//////////////////////////////////
-                VIEW & PURE
-    //////////////////////////////////*/
-
 }

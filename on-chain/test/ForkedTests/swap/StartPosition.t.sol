@@ -46,28 +46,6 @@ contract StartPositionFunctionTest is ForkedHelper {
         });
 
         /*/////////////////////////////////////////////////
-                        PERMIT2 PAYLOAD
-        /////////////////////////////////////////////////*/
-        IAllowanceTransfer.PermitDetails[] memory details = new IAllowanceTransfer.PermitDetails[](2);
-        // details[0] = _generatePermit2Payload( /*token*/, /* amount*/, /* nonce */);
-        // details[1] = _generatePermit2Payload( /*token*/, /* amount*/, /* nonce */);
-
-        // IAllowanceTransfer.PermitBatch memory permit2 = IAllowanceTransfer.PermitBatch({
-        //     details: details,
-        //     spender: ,
-        //     sigDeadline: DEADLINE
-        // });
-
-        /*/////////////////////////////////////////////////
-                            SIGNATURE
-        /////////////////////////////////////////////////*/
-        bytes memory signature = "";
-
-        /*/////////////////////////////////////////////////
-                            POOL KEYS
-        /////////////////////////////////////////////////*/
-
-        /*/////////////////////////////////////////////////
                             SWAP PAYLOAD
         /////////////////////////////////////////////////*/
         IStartPositionFacet.SwapPayload[] memory swapPayload = new IStartPositionFacet.SwapPayload[](2);
@@ -109,6 +87,7 @@ contract StartPositionFunctionTest is ForkedHelper {
         //     investPayload, 
         //     permit2,
         //     signature,
+        //     transferDetails
         //     swapPayload, 
         //     DEADLINE
         // );
