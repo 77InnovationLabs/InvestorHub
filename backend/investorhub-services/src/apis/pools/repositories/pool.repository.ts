@@ -160,4 +160,21 @@ export class PoolRepository extends BaseRepository<Pool> {
       totalPages: Math.ceil(total / limit)
     };
   }
+
+  async findById(id: string): Promise<Pool | null> {
+    return this.poolModel.findById(id)
+      .populate({
+        path: 'token0',
+        populate: {
+          path: 'network'
+        }
+      })
+      .populate({
+        path: 'token1',
+        populate: {
+          path: 'network'
+        }
+      })
+      .exec();
+  }
 } 

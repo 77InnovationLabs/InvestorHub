@@ -39,9 +39,17 @@ class TokenInfoDto {
 }
 
 export class UniswapPoolResponseDto {
+  @ApiProperty({ example: '507f1f77bcf86cd799439011', description: 'Pool ID' })
+  @IsString()
+  _id: string;
+
   @ApiProperty({ example: '3000', description: 'Fee tier in hundredths of a bip, e.g., 3000 = 0.3%' })
   @IsNumberString()
   feeTier: string;
+
+  @ApiProperty({ example: '0x8ad599c3a0ff1de082011efddc58f1908eb6e6d8', description: 'Pool address' })
+  @IsString()
+  address: string;
 
   @ApiProperty({ type: TokenInfoDto })
   @ValidateNested()

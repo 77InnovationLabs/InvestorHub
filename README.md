@@ -1,15 +1,20 @@
 # <p align="center"> InvestorHub V1.0
 
+---
+
+<p align="center">
+  <img src="./images/logo-investorhub.png">
 </p>
 
-<p align="center"> Chainlink Chromion Hackathon
-</p>
+---
+
+## <p align="center"> Chainlink Chromion Hackathon </p>
 </br>
 
 ### Links
-- Pitch deck presentation is available on [YouTube]()
-- Live demo [website]()
-- [Slide]() presentation
+- Pitch deck presentation is available on [YouTube](https://youtu.be/VlXMRe3jbEw)
+- Live demo [website](https://investor-hub-rosy.vercel.app/)
+- [Slide](https://github.com/77InnovationLabs/InvestorHub/blob/main/pitch/InvestorHub-The-Gamified-Gateway-to-DeFi-Investing.pdf) presentation
 
 </br>
 
@@ -93,8 +98,11 @@
       - [15.1.5 Vault](#1515-vault)  
     - [15.2 Blockchains](#152-blockchains)  
     - [15.3 Tools](#153-tools)  
-
-16. [Appendix](#16-appendix)
+16. [On-chain Deployments & Interactions](#16-on-chain-deployments--interactions)
+    - [16.1 On-chain Interactions](#161-on-chain-interactions)
+    - [16.2 Deployments](#162-deployments)
+17. [Team](#17-team)
+18. [Appendix](#18-appendix)
 
     
 </br>
@@ -761,9 +769,47 @@ The Chromion hackathon is one more step for what we have in front of us. Investo
 
 </br>
 
+## 16. On-chain Deployments & Interactions
+
+### 16.1 On-chain Interactions
+
+- [Opening Position](https://sepolia.etherscan.io/tx/0x20bed3167193c4d46611f2ac48ac7f9c26a465f73c319ef63f408bbfbbf3706b)
+
+### 16.2 Deployments
+
+| Contracts | Deploy Address |
+|---|---|
+| Diamond | 0xcB205dd75A20943905142c177d729Ec781d87dc8 |
+| DiamondCut |  0xdA67F81659735834F8c00b5A3905884526294B17 |
+| DiamondLoupe | 0x8D144Ce5D88238CfC634b4a4EbC9d4C13F3A71AD |
+| Initializer | 0x95C7B28ABA475Ea7F201F87AcDD106611C8a4442 |
+| Ownership | 0x3a314f6ec5be84fce01E0A244f612bdd8C7aE1Ef |
+| Swap | 0x282b17587f1518BE4872477c3835d537D95Eb632 |
+| fullSwap | 0xA6Cd62bd38186eA1c1F1a09Cef14B9db3b7431d6 |
+| StartPosition | 0xba5749179f34170295830Ac5B33E66C0Db01dB71 |
+| DecreasePosition | 0x25dF71F9aFF5880B3554ac9c9c78b9fAEF29E583 |
+| CollectPosition | 0x2f93BA653Cd834B7a775eCE7Ea981CcfEBe963Fa |
+| IncreasePosition | 0x2f93BA653Cd834B7a775eCE7Ea981CcfEBe963Fa |
+| IncreasePosition | 0x2015F99b437b76A484D4ed7E3199655790C2B8dB |
+| CCIPSend | 0x707a06f91751fdB8ee36C2804C57D9961a891Fa6 |
+| CCIPReceive | 0xa1aEc0166Fa5E14571F2379E27e3D378E7FA0F5C |
+| DataFeeds | 0xc3A348F867B1592d14CBDFb65F6169B0A53474fD |
+| Vault | 0xacEa951B2E9b58Ce7914044Eaf41E2a4D04c7748 |
+
 </br>
 
-## 16. Appendix
+## 17. Team
+| Name | Role | Socials |
+|------|------|---------|
+|Antonio Quental | Technical Project manager | [Visit](x.com/antonioquental)|
+| Gabriel Thome | Full Stack Dev | [Visit](https://github.com/thomasdev5832) |
+| Jether Rodrigues do Nascimento | Software Engineer - Arquiteto | [Visit](https://www.linkedin.com/in/jetherrodrigues/) |
+| Lucas Archangelo | Gerente de TI | [Visit](https://www.linkedin.com/in/lucasrarchangelo?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app) |
+| Patrick "Barba" Carneiro | Blockchain Developer & Security Researcher | [Visit](https://linktr.ee/i3arba)|
+
+</br>
+
+## 18. Appendix
 
 - **User Journey Maps:** Included as Mermaid diagrams in Section 4.
 - **Wireframes & Mockups:** To be added.

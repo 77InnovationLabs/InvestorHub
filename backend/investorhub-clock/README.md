@@ -107,6 +107,15 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 3. docker push registry.heroku.com/investorhub-clock/worker
 4. heroku container:release worker -a investorhub-clock
 
+Complete command line:
+```bash
+heroku stack:set container --app=investorhub-clock && \ 
+  docker build -t investorhub-clock --platform linux/amd64 -f Dockerfile.worker . && \ 
+  docker tag investorhub-clock registry.heroku.com/investorhub-clock/worker && \ 
+  docker push registry.heroku.com/investorhub-clock/worker && \ 
+  heroku container:release worker -a investorhub-clock 
+```
+
 Command sintaxe: `heroku <command> --app=<your_app>`
 
 ## License

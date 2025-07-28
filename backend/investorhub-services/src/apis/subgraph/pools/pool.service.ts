@@ -116,7 +116,9 @@ export class PoolService {
     });
     
     return {
+      _id: pool.id,
       feeTier: pool.feeTier,
+      address: pool.id,
       token0: pool.token0,
       token1: pool.token1,
       createdAtTimestamp: pool.createdAtTimestamp,

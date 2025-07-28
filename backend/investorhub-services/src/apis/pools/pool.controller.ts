@@ -1,8 +1,8 @@
-import { Controller, Post, Body, Get } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { Controller, Post, Body, Get, Param } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { PoolService } from './pool.service';
 import { ListPoolsRequestDto } from '../shared/dtos/list-pools-request.dto';
-import { UniswapPoolsResponseDto } from '../shared/dtos/list-pools-response.dto';
+import { UniswapPoolResponseDto, UniswapPoolsResponseDto } from '../shared/dtos/list-pools-response.dto';
 import { ErrorResponseDto } from '../shared/dtos/error-response.dto';
 
 @ApiTags('Pools')
@@ -28,5 +28,15 @@ export class PoolController {
   @ApiResponse({ status: 503, description: 'Service temporarily unavailable', type: ErrorResponseDto })
   async getAllPools(): Promise<UniswapPoolsResponseDto> {
     return this.poolService.fetchAllPools();
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get pool by ID from MongoDB' })
+  @ApiParam({ name: 'id', description: 'Pool ID', example: '507f1f77bcf86cd799439011' })
+  @ApiResponse({ status: 200, description: 'Pool retrieved successfully', type: UniswapPoolResponseDto })
+  @ApiResponse({ status: 404, description: 'Pool not found', type: ErrorResponseDto })
+  @ApiResponse({ status: 503, description: 'Service temporarily unavailable', type: ErrorResponseDto })
+  async getPoolById(@Param('id') id: string): Promise<UniswapPoolResponseDto> {
+    return this.poolService.fetchPoolById(id);
   }
 } 
